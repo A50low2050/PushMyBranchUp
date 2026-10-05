@@ -22,10 +22,21 @@ class FastAPISettings(BaseModel):
     root_path: str = "/api"
 
 
+class DBSettings(BaseModel):
+    """настройки базы данных"""
+
+    url: str
+    echo: bool = False
+    autocommit: bool = False
+    autoflush: bool = False
+    expire_on_commit: bool = False
+
+
 class Settings(BaseSettings):
     """настройки приложения"""
 
     uvicorn: UvicornSettings
+    database: DBSettings
     fastapi: FastAPISettings = FastAPISettings()
 
     model_config = SettingsConfigDict(

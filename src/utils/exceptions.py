@@ -13,3 +13,7 @@ class ObjectNotFoundError(ApplicationBaseError):
 
 class ObjectAlreadyExistsError(ApplicationBaseError):
     detail = "Объект уже существует"
+
+
+class DBConnectionError(ApplicationBaseError):
+    detail = "Ошибка соединения с базой данных"
