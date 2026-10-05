@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from src.api.v1 import router as v1_router
 from src.config import settings
 
 
@@ -18,3 +19,4 @@ app = FastAPI(
     description=settings.fastapi.description,
     root_path=settings.fastapi.root_path,
 )
+app.include_router(v1_router)
