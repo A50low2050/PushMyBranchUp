@@ -1,3 +1,5 @@
+# flake8: noqa: E402
+
 import sys
 from pathlib import Path
 
@@ -8,7 +10,7 @@ import uvicorn
 from src.config import settings
 from src.utils.logserv import LogService
 
-### точка входа в приложение
+# точка входа в приложение
 if __name__ == "__main__":
     log_config = LogService.configurate()
 

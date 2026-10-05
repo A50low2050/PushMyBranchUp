@@ -1,3 +1,5 @@
+from types import TracebackType
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -18,10 +20,16 @@ class DBManager:
 
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
-        ### тут будут классы-репозитории для работы с таблицами
+        # тут будут классы-репозитории для работы с таблицами
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+
         await self.rollback()
         await self.session.close()
 

@@ -10,7 +10,7 @@ router = APIRouter(
 
 
 @router.get("/me")
-async def get_me(token: GetTokenDep) -> dict:
+async def get_me(token: GetTokenDep) -> dict[str, str]:
     if not token:
         raise UnauthorizedHTTPError
 

@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
-class BaseORM(AsyncAttrs, DeclarativeBase): ...
+class BaseORM(AsyncAttrs, DeclarativeBase):
+    ...
 
 
 class CommonBaseORM(BaseORM):
