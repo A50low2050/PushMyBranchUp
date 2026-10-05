@@ -8,6 +8,8 @@ logger = LogService.get_logger()
 
 
 class DBManager:
+    """Класс для управления соединением с базой данных и транзакциями"""
+
     def __init__(
         self,
         session_factory: async_sessionmaker,

@@ -17,3 +17,7 @@ class ObjectAlreadyExistsError(ApplicationBaseError):
 
 class DBConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с базой данных"
+
+
+class DBIntValueOutOfRangeError(ApplicationBaseError):
+    detail = "Числовое значение вне допустимого диапазона"
