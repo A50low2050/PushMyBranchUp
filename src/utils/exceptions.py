@@ -21,3 +21,7 @@ class DBConnectionError(ApplicationBaseError):
 
 class DBIntValueOutOfRangeError(ApplicationBaseError):
     detail = "Числовое значение вне допустимого диапазона"
+
+
+class DBQueryError(ApplicationBaseError):
+    detail = "Ошибка запроса к базе данных"

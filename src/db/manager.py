@@ -3,6 +3,7 @@ from types import TracebackType
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
 
@@ -21,6 +22,7 @@ class DBManager:
     async def __aenter__(self):
         self.session: AsyncSession = self.session_factory()
         # тут будут классы-репозитории для работы с таблицами
+        self.users = UsersRepo(self.session)
         return self
 
     async def __aexit__(

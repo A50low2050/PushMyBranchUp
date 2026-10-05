@@ -1,0 +1,9 @@
+from src.services.base import BaseService
+
+
+class UsersSerivce(BaseService):
+    def login(self): ...
+
+    def register(self): ...
+
+    def get_user(self): ...

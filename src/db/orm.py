@@ -10,7 +10,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class BaseORM(AsyncAttrs, DeclarativeBase):
-    ...
+    """Базовая модель для всех ORM моделей"""
 
 
 class CommonBaseORM(BaseORM):
