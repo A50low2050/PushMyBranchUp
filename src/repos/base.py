@@ -6,7 +6,7 @@ from sqlalchemy import CursorResult, delete, insert, select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError, NoResultFound, StatementError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.orm import CommonBaseORM
+from src.models.base import CommonBaseORM
 from src.schemas.base import BaseDTO
 from src.utils.exceptions import (
     DBQueryError,

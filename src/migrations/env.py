@@ -1,4 +1,4 @@
-# flake8: noqa: E402
+# flake8: noqa: E402, F401
 
 import sys
 from pathlib import Path
@@ -14,7 +14,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.config import settings
-from src.db.orm import BaseORM
+from src.models.base import BaseORM
 from src.models.users import UserORM
 
 # this is the Alembic Config object, which provides

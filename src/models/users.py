@@ -1,7 +1,7 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.db.orm import CommonBaseORM
+from src.models.base import CommonBaseORM
 
 
 class UserORM(CommonBaseORM):
