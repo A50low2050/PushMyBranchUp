@@ -3,20 +3,28 @@ repos:
 -   repo: local
     hooks:
     -   id: black
-        name: black
-        entry: black
+        name: Formatting with black
+        entry: black --check
         language: system
         types: [python]
 
     -   id: flake8
-        name: flake8
+        name: Linting with flake8
         entry: flake8
         language: system
         types: [python]
 
     -   id: mypy
-        name: mypy
+        name: Type checking with mypy
         entry: mypy --ignore-missing-imports
         language: system
         types: [python]
         require_serial: true
+
+    -   id: pytest
+        name: Testing with pytest
+        entry: pytest -v --color=yes -c pytest.ini
+        language: system
+        types: [python]
+        pass_filenames: false
+
