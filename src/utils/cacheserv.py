@@ -44,7 +44,10 @@ class InMemoryAsyncCacheService(AsyncCacheServiceBase):
         self.storage: dict[str, CacheBucket] = {}
 
     def _check_ttl(self, key: str) -> None | CacheBucket:
-        bucket = self.storage[key]
+        bucket = self.storage.get(key)
+        if bucket is None:
+            return None
+
         curr_timestamp = time.time()
         if curr_timestamp - bucket.timestamp >= bucket.ttl:
             del self.storage[key]

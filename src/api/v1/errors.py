@@ -24,3 +24,13 @@ class ObjectAlreadyExistsHTTPError(ApplicationHTTPError):
 class UnauthorizedHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Пользователь не авторизован"
+
+
+class InvalidTokenHTTPError(ApplicationHTTPError):
+    detail = "Неверный токен"
+    status_code = status.HTTP_401_UNAUTHORIZED
+
+
+class WithdrawnTokenHTTPError(ApplicationHTTPError):
+    detail = "Предоставленный токен отозван"
+    status_code = status.HTTP_403_FORBIDDEN

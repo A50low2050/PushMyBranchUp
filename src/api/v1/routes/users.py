@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from src.api.v1.dependencies.auth import GetTokenDep
-from src.api.v1.errors import UnauthorizedHTTPError
+from src.api.v1.dependencies.auth import GetSubDep
 
 router = APIRouter(
     prefix="/auth",
@@ -10,11 +9,9 @@ router = APIRouter(
 
 
 @router.get("/me")
-async def get_me(token: GetTokenDep) -> dict[str, str]:
-    if not token:
-        raise UnauthorizedHTTPError
+async def get_me(sub: GetSubDep) -> dict:
 
     return {
         "message": "Hello, user!",
-        "token": token,
+        "token": sub,
     }

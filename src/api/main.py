@@ -11,7 +11,7 @@ from src.db.manager import DBManager
 from src.utils.cacheserv import InMemoryAsyncCacheService
 from src.utils.logserv import LogService
 
-logger = LogService.get_logger()
+logger = LogService.get_logger(__name__)
 
 
 @asynccontextmanager
