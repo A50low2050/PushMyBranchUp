@@ -39,5 +39,5 @@ async def get_user_posts(
     },
 )
 async def get_post(post_id: int) -> PostResponseDTO:
-    # TODO: Implement after the service layer is ready
+    # TODO: Add 404 error handling
     raise NotImplementedError
