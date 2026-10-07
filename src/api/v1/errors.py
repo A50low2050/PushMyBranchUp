@@ -24,3 +24,13 @@ class ObjectAlreadyExistsHTTPError(ApplicationHTTPError):
 class UnauthorizedHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Пользователь не авторизован"
+
+
+class ForbiddenHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_403_FORBIDDEN
+    detail = "Доступ запрещен"
+
+
+class BadRequestHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Запрошенное действие невозможно выполнить"
