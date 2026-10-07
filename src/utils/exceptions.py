@@ -19,6 +19,10 @@ class DBConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с базой данных"
 
 
+class CacheConnectionError(ApplicationBaseError):
+    detail = "Ошибка соединения с кэшем"
+
+
 class DBIntValueOutOfRangeError(ApplicationBaseError):
     detail = "Числовое значение вне допустимого диапазона"
 
