@@ -18,10 +18,28 @@ class NotFoundHTTPError(ApplicationHTTPError):
     detail = "Объект не найден"
 
 
+class UserNotFoundHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_404_NOT_FOUND
+    error = "USER_NOT_FOUND"
+    detail = "Пользователь не найден"
+
+
 class ObjectAlreadyExistsHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_409_CONFLICT
     error = "OBJECT_ALREADY_EXISTS"
     detail = "Объект уже существует"
+
+
+class UserAlreadyExistsHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_409_CONFLICT
+    error = "USER_ALREADY_EXISTS"
+    detail = "Пользователь уже существует"
+
+
+class InvalidLoginDataHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error = "INVALID_LOGIN_DATA"
+    detail = "Неверные логин или пароль"
 
 
 class UnauthorizedHTTPError(ApplicationHTTPError):

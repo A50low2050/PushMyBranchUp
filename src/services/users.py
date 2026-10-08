@@ -26,7 +26,7 @@ from src.utils.logserv import LogService
 logger = LogService.get_logger(__name__)
 
 
-class UsersSerivce(BaseService):
+class UsersService(BaseService):
     async def login(self, data: UserLoginDTO) -> IssuedTokens:
         """Вход в аккаунт пользователя"""
 
@@ -94,7 +94,7 @@ class UsersSerivce(BaseService):
         try:
             result = await self.db.users.get_one(id=user_id)
         except ObjectNotFoundError as exc:
-            raise InvalidLoginDataError from exc
+            raise UserNotFoundError from exc
 
         user_schema = UserResponseDTO.model_validate(result)
         return user_schema
@@ -105,7 +105,6 @@ class UsersSerivce(BaseService):
         cache: AsyncCacheServiceBase,
     ) -> None:
         user_id = int(access_t["sub"])
-        logger.info(f"Выход пользователя из системы user_id={user_id}")
         jti = access_t.get("jti")
         exp_timestamp = access_t.get("exp")
 
@@ -117,7 +116,6 @@ class UsersSerivce(BaseService):
 
         await self.db.rf_tokens.delete(owner_id=user_id)
         await self.db.commit()
-        logger.info(f"Пользователь user_id={user_id} успешно вышел из системы")
 
     async def update_user(self, user_id: int, data: UserUpdateDTO) -> int:
         try:

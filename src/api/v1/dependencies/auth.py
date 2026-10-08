@@ -16,6 +16,7 @@ from src.api.v1.errors import (
 )
 from src.config import settings
 from src.schemas.base import BaseDTO
+from src.schemas.tokens import RefreshTokenDTO
 from src.services.auth import TokenService
 from src.utils.exceptions import ObjectNotFoundError
 from src.utils.hashserv import HashService
@@ -91,5 +92,6 @@ class RefreshTokenResolver:
 
 
 GetSubDep = Annotated[int, Depends(AccessTokenResolver())]
+GetAccessTokenPayloadDep = Annotated[dict, Depends(AccessTokenResolver.decode)]
 GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.validate)]
-GetRefreshTokenDep = Annotated[str, Depends(RefreshTokenResolver())]
+GetRefreshTokenDep = Annotated[RefreshTokenDTO, Depends(RefreshTokenResolver())]

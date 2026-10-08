@@ -15,13 +15,13 @@ class UserDTO(BaseDTO):
 
 
 class UserLoginDTO(BaseDTO):
-    email: str = Field(min_length=1)
+    email: EmailStr
     password: str = Field(min_length=1)
 
 
 class UserRegisterDTO(BaseDTO):
-    username: str = Field(min_length=3, max_length=30)
-    email: EmailStr
+    username: str = Field(min_length=3, max_length=255)
+    email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
 
 

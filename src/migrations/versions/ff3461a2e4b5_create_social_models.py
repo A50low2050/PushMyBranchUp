@@ -25,6 +25,7 @@ def upgrade() -> None:
         "users",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("username", sa.String(length=255), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("hashed_password", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -39,12 +40,13 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("email"),
         sa.UniqueConstraint("username"),
     )
     op.create_table(
         "posts",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("author_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
         sa.Column(
             "created_at",
@@ -59,7 +61,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.ForeignKeyConstraint(
-            ["author_id"],
+            ["user_id"],
             ["users.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
@@ -100,7 +102,7 @@ def upgrade() -> None:
         "comments",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
-        sa.Column("author_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("post_id", sa.Integer(), nullable=False),
         sa.Column(
             "created_at",
@@ -115,7 +117,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.ForeignKeyConstraint(
-            ["author_id"],
+            ["user_id"],
             ["users.id"],
         ),
         sa.ForeignKeyConstraint(

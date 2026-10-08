@@ -4,9 +4,9 @@ from datetime import datetime
 
 
 class PostCreateDTO(BaseDTO):
-    text: str = Field(min_length=1, max_length=2200)
+    content: str = Field(min_length=1, max_length=2200)
 
-    @field_validator("text")
+    @field_validator("content")
     @classmethod
     def validate_text(cls, value: str) -> str:
         if not value.strip():
@@ -16,8 +16,8 @@ class PostCreateDTO(BaseDTO):
 
 class PostResponseDTO(BaseDTO):
     id: int
-    author_id: int
-    text: str
+    user_id: int
+    content: str
     created_at: datetime
     likes_count: int
     comments_count: int
