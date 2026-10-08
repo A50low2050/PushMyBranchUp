@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Response
 
+from src.api.v1.dependencies.cache import CacheDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.errors import (
     InvalidLoginDataHTTPError,
@@ -18,10 +19,8 @@ from src.api.v1.dependencies.auth import (
 from src.schemas.users import (
     UserLoginDTO,
     UserRegisterDTO,
-    UserResponseDTO,
     UserUpdateDTO,
 )
-from src.utils.cacheserv import AsyncCacheServiceBase
 from src.utils.exceptions import (
     InvalidLoginDataError,
     UserAlreadyExistsError,
@@ -56,7 +55,6 @@ async def get_me(sub: GetSubDep, db: DatabaseDep) -> dict:
 
 @router.post(
     "/register",
-    response_model=UserResponseDTO,
     responses={
         409: {"model": ErrorResponseDTO},
     },
@@ -74,23 +72,28 @@ async def register(data: UserRegisterDTO, db: DatabaseDep) -> dict:
 
 @router.post(
     "/login",
-    response_model=IssuedTokens,
     responses={
         401: {"model": ErrorResponseDTO},
     },
 )
-async def login(data: UserLoginDTO, db: DatabaseDep) -> IssuedTokens:
+async def login(
+    data: UserLoginDTO, response: Response, db: DatabaseDep
+) -> IssuedTokens:
     try:
         tokens = await UsersService(db).login(data=data)
     except InvalidLoginDataError as exc:
         raise InvalidLoginDataHTTPError from exc
 
+    response.set_cookie(
+        key=settings.auth.refresh_token_cookie_name,
+        value=tokens.refresh_token,
+        httponly=True,
+    )
     return tokens
 
 
 @router.post(
     "/refresh",
-    response_model=IssuedTokens,
     responses={
         401: {"model": ErrorResponseDTO},
     },
@@ -99,7 +102,7 @@ async def refresh_token(
     token: GetRefreshTokenDep,
     response: Response,
     db: DatabaseDep,
-    cache: AsyncCacheServiceBase,
+    cache: CacheDep,
 ) -> IssuedTokens:
 
     try:
@@ -128,7 +131,7 @@ async def refresh_token(
 async def logout(
     response: Response,
     token: GetAccessTokenPayloadDep,
-    cache: AsyncCacheServiceBase,
+    cache: CacheDep,
     db: DatabaseDep,
 ) -> None:
     try:
@@ -144,7 +147,6 @@ async def logout(
 
 @router.patch(
     "/me",
-    response_model=UserResponseDTO,
     responses={
         401: {"model": ErrorResponseDTO},
         409: {"model": ErrorResponseDTO},
