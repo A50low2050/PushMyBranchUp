@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
+from src.repos.comment import CommentsRepo
+from src.repos.post import PostsRepo
 
 logger = LogService.get_logger()
 
@@ -23,6 +25,8 @@ class DBManager:
         self.session: AsyncSession = self.session_factory()
         # тут будут классы-репозитории для работы с таблицами
         self.users = UsersRepo(self.session)
+        self.comments = CommentsRepo(self.session)
+        self.posts = PostsRepo(self.session)
         return self
 
     async def __aexit__(
