@@ -1,12 +1,11 @@
 from fastapi import APIRouter
-
 from src.api.v1.dependencies.auth import GetTokenDep
 from src.api.v1.errors import UnauthorizedHTTPError
 from src.schemas.errors import ErrorResponseDTO
+from src.schemas.tokens import IssuedTokens
 
 from src.schemas.users import (
     RefreshTokenRequestDTO,
-    TokenDTO,
     UserLoginDTO,
     UserRegisterDTO,
     UserResponseDTO,
@@ -49,24 +48,24 @@ async def register(data: UserRegisterDTO) -> UserResponseDTO:
 
 @router.post(
     "/login",
-    response_model=TokenDTO,
+    response_model=IssuedTokens,
     responses={
         401: {"model": ErrorResponseDTO},
     },
 )
-async def login(data: UserLoginDTO) -> TokenDTO:
+async def login(data: UserLoginDTO) -> IssuedTokens:
     # TODO: Implement after the service layer is ready
     raise NotImplementedError
 
 
 @router.post(
     "/refresh",
-    response_model=TokenDTO,
+    response_model=IssuedTokens,
     responses={
         401: {"model": ErrorResponseDTO},
     },
 )
-async def refresh_token(data: RefreshTokenRequestDTO) -> TokenDTO:
+async def refresh_token(data: RefreshTokenRequestDTO) -> IssuedTokens:
     # TODO: Implement after the service layer is ready
     raise NotImplementedError
 
