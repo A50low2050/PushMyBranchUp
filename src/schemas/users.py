@@ -40,7 +40,7 @@ class TokenDTO(BaseDTO):
 
 
 class RefreshTokenRequestDTO(BaseDTO):
-    refresh_token: str
+    refresh_token: str = Field(min_length=1)
 
 
 class UserUpdateDTO(BaseDTO):
