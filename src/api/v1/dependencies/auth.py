@@ -74,7 +74,7 @@ class RefreshTokenResolver:
         cookie = settings.auth.refresh_token_cookie_name
         token = request.cookies.get(cookie)
         if not token:
-            raise UnauthorizedHTTPError("Отсутствует Refresh токен")
+            raise UnauthorizedHTTPError("Отсутствует Refresh токен в cookie")
         return token
 
     async def __call__(
@@ -91,4 +91,5 @@ class RefreshTokenResolver:
 
 
 GetSubDep = Annotated[int, Depends(AccessTokenResolver())]
-GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.get_access_token)]
+GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.validate)]
+GetRefreshTokenDep = Annotated[str, Depends(RefreshTokenResolver())]

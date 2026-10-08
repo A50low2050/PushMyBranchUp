@@ -25,7 +25,13 @@ class RefreshTokenDTO(BaseDTO):
     id: int
     hashed_data: str
     owner_id: int
-    expires_at: int
+    expires_at: datetime
     access_jti: str
-    created_at: int
-    updated_at: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class IssuedTokens(BaseDTO):
+    access_token: str
+    refresh_token: str
+    type: str = "Bearer"

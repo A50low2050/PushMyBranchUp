@@ -4,10 +4,10 @@ from datetime import UTC, datetime
 import jwt
 
 from src.config import settings
-from src.schemas.auth import TokenType
 from src.schemas.tokens import (
     CreatedAccessToken,
     CreatedRefreshTokenDTO,
+    IssuedTokens,
     RefreshTokenCreateDTO,
     RefreshTokenDTO,
 )
@@ -29,7 +29,6 @@ class TokenService(BaseService):
 
         token_data["exp"] = expires_timestamp
         token_data["iat"] = datetime.timestamp(now)
-        token_data["typ"] = TokenType.ACCESS
 
         token = jwt.encode(
             payload=token_data,
@@ -75,7 +74,7 @@ class TokenService(BaseService):
     async def update_tokens(
         self,
         user: UserDTO,
-    ) -> tuple[CreatedAccessToken, CreatedRefreshTokenDTO]:
+    ) -> IssuedTokens:
 
         payload = {"sub": str(user.id)}
         access_t = self.create_access_token(payload=payload)
@@ -91,4 +90,9 @@ class TokenService(BaseService):
         )
         await self.db.rf_tokens.delete(owner_id=user.id)
         await self.db.rf_tokens.add(token_to_update)
-        return access_t, refresh_t
+
+        tokens = IssuedTokens(
+            access_token=access_t.value, refresh_token=refresh_t.value
+        )
+
+        return tokens
