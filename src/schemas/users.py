@@ -15,7 +15,7 @@ class UserDTO(BaseDTO):
 
 
 class UserLoginDTO(BaseDTO):
-    login: str = Field(min_length=1)
+    email: str = Field(min_length=1)
     password: str = Field(min_length=1)
 
 
@@ -33,6 +33,11 @@ class UserResponseDTO(BaseDTO):
     updated_at: datetime
 
 
-class TokenDTO(BaseDTO):
-    access_token: str
-    token_type: str = "bearer"
+class UserAddDTO(BaseDTO):
+    username: str
+    email: EmailStr
+    hashed_password: str
+
+
+class UserUpdateDTO(BaseDTO):
+    username: str

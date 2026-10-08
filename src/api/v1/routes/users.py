@@ -2,7 +2,8 @@ from fastapi import APIRouter
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.schemas.errors import ErrorResponseDTO
-from src.schemas.users import TokenDTO, UserLoginDTO, UserRegisterDTO, UserResponseDTO
+from src.schemas.tokens import IssuedTokens
+from src.schemas.users import UserLoginDTO, UserRegisterDTO, UserResponseDTO
 
 router = APIRouter(
     prefix="/auth",
@@ -38,11 +39,11 @@ async def register(data: UserRegisterDTO) -> UserResponseDTO:
 
 @router.post(
     "/login",
-    response_model=TokenDTO,
+    response_model=IssuedTokens,
     responses={
         401: {"model": ErrorResponseDTO},
     },
 )
-async def login(data: UserLoginDTO) -> TokenDTO:
+async def login(data: UserLoginDTO) -> IssuedTokens:
     # TODO: Implement after the service layer is ready
     raise NotImplementedError
