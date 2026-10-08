@@ -16,7 +16,7 @@ class CommentORM(CommonBaseORM):
         Text,
         nullable=False,
     )
-    author_id: Mapped[int] = mapped_column(
+    user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False,
     )
