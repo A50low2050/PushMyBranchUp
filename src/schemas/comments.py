@@ -4,9 +4,9 @@ from src.schemas.base import BaseDTO
 
 
 class CommentCreateDTO(BaseDTO):
-    text: str = Field(min_length=1, max_length=2200)
+    content: str = Field(min_length=1, max_length=2200)
 
-    @field_validator("text")
+    @field_validator("content")
     @classmethod
     def validate_text(cls, value: str) -> str:
         if not value.strip():
@@ -17,6 +17,6 @@ class CommentCreateDTO(BaseDTO):
 class CommentResponseDTO(BaseDTO):
     id: int
     post_id: int
-    author_id: int
-    text: str
+    user_id: int
+    content: str
     created_at: datetime
