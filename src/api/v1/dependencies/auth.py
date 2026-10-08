@@ -91,7 +91,11 @@ class RefreshTokenResolver:
         return token
 
 
+# получить id пользователя из JWT Access токена
 GetSubDep = Annotated[int, Depends(AccessTokenResolver())]
+# получить payload из JWT Access токена
 GetAccessTokenPayloadDep = Annotated[dict, Depends(AccessTokenResolver.decode)]
+# получить сырой Access токен
 GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.validate)]
+# получить (проверить) Refresh токен в базе
 GetRefreshTokenDep = Annotated[RefreshTokenDTO, Depends(RefreshTokenResolver())]

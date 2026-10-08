@@ -50,7 +50,8 @@ class UsersService(BaseService):
         )  # type: ignore
         if rf_token:
             await TokenService(self.db).blacklist_ac_token(
-                rf_token=rf_token, cache=cache
+                rf_token=rf_token,
+                cache=cache,
             )
         tokens = await TokenService(self.db).update_tokens(user=user, cache=cache)
         await self.db.commit()
@@ -106,27 +107,39 @@ class UsersService(BaseService):
 
     async def logout(
         self,
-        access_t: dict,
+        rf_token: RefreshTokenDTO,
+        user_id: int,
         cache: AsyncCacheServiceBase,
     ) -> None:
-        user_id = int(access_t["sub"])
-        jti = access_t.get("jti")
-        exp_timestamp = access_t.get("exp")
+        """Логика выхода из пользовательского аккаунта"""
 
-        if jti and exp_timestamp:
-            key = f"{settings.auth.access_token_blacklist_prefix}{jti}"
-            remaining_ttl = int(float(exp_timestamp) - datetime.now(UTC).timestamp())
-            if remaining_ttl > 0:
-                await cache.setx(key, 1, remaining_ttl)
+        jti = rf_token.access_jti
+        exp_timestamp = rf_token.expires_at + settings.auth.access_token_expire_delta
 
-        await self.db.rf_tokens.delete(owner_id=user_id)
+        key = f"{settings.auth.access_token_blacklist_prefix}{jti}"
+        remaining_ttl = (
+            exp_timestamp.astimezone(UTC) - datetime.now(UTC)
+        ).total_seconds()
+        if remaining_ttl > 0:
+            await cache.setx(key, 1, int(remaining_ttl))
+
+        await self.db.rf_tokens.delete(
+            owner_id=user_id,
+            hashed_data=rf_token.hashed_data,
+        )
         await self.db.commit()
 
     async def update_user(self, user_id: int, data: UserUpdateDTO) -> UserResponseDTO:
+        """Обновление данных о пользователе"""
+
         try:
             user: UserDTO = await self.db.users.get_one(id=user_id)  # type: ignore
         except ObjectNotFoundError as exc:
             raise UserNotFoundError from exc
+
+        user_schema = UserResponseDTO.model_validate(user)
+        if user.username == data.username:
+            return user_schema
 
         try:
             result = await self.db.users.update(data, id=user_id)
@@ -137,5 +150,5 @@ class UsersService(BaseService):
             raise UserNotFoundError
 
         await self.db.commit()
-        user_schema = UserResponseDTO.model_validate(user)
+        user_schema.username = data.username
         return user_schema

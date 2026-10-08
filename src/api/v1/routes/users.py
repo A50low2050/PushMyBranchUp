@@ -11,7 +11,6 @@ from src.schemas.errors import ErrorResponseDTO
 from src.schemas.tokens import IssuedTokens
 
 from src.api.v1.dependencies.auth import (
-    GetAccessTokenPayloadDep,
     GetRefreshTokenDep,
     GetSubDep,
 )
@@ -139,13 +138,15 @@ async def refresh_token(
 )
 async def logout(
     response: Response,
-    token: GetAccessTokenPayloadDep,
+    sub: GetSubDep,
+    rf_token: GetRefreshTokenDep,
     cache: CacheDep,
     db: DatabaseDep,
 ) -> None:
     try:
         await UsersService(db).logout(
-            access_t=token,
+            rf_token=rf_token,
+            user_id=sub,
             cache=cache,
         )
     except InvalidLoginDataError as exc:
@@ -173,5 +174,7 @@ async def update_me(
         )
     except UserNotFoundError as exc:
         raise UserNotFoundHTTPError from exc
+    except UserAlreadyExistsError as exc:
+        raise UserAlreadyExistsHTTPError from exc
 
     return UserGetMeResponseDTO(data=user)

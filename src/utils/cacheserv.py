@@ -3,24 +3,26 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 
+CacheTypes = dict | str | int | float
+
 
 class CacheBucket(BaseModel):
-    value: dict | str | int
+    value: CacheTypes
     timestamp: float
     ttl: int
 
 
 class AsyncCacheServiceBase(ABC):
     @abstractmethod
-    async def get(self, key: str) -> dict | str | int | None: ...
+    async def get(self, key: str) -> CacheTypes | None: ...
 
     @abstractmethod
     async def setx(
         self,
         key: str,
-        value: dict | str | int,
+        value: CacheTypes,
         ttl: int = 3600,
-    ) -> dict | str | int | None: ...
+    ) -> CacheTypes | None: ...
 
     @abstractmethod
     async def exists(self, key: str) -> bool: ...
@@ -55,7 +57,7 @@ class InMemoryAsyncCacheService(AsyncCacheServiceBase):
 
         return bucket
 
-    async def get(self, key: str) -> dict | str | int | None:
+    async def get(self, key: str) -> CacheTypes | None:
         if key not in self.storage:
             return None
 
@@ -68,9 +70,9 @@ class InMemoryAsyncCacheService(AsyncCacheServiceBase):
     async def setx(
         self,
         key: str,
-        value: dict | str | int,
+        value: CacheTypes,
         ttl: int = 3600,
-    ) -> dict | str | int:
+    ) -> CacheTypes:
         bucket = CacheBucket(
             value=value,
             timestamp=time.time(),
