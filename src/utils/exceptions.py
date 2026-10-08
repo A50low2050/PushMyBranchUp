@@ -11,12 +11,24 @@ class ObjectNotFoundError(ApplicationBaseError):
     detail = "Объект не найден"
 
 
+class UserNotFoundError(ObjectNotFoundError):
+    detail = "Пользователь не найден"
+
+
 class ObjectAlreadyExistsError(ApplicationBaseError):
     detail = "Объект уже существует"
 
 
+class UserAlreadyExistsError(ObjectAlreadyExistsError):
+    detail = "Пользователь уже существует"
+
+
 class DBConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с базой данных"
+
+
+class CacheConnectionError(ApplicationBaseError):
+    detail = "Ошибка соединения с кэшем"
 
 
 class DBIntValueOutOfRangeError(ApplicationBaseError):
@@ -25,3 +37,7 @@ class DBIntValueOutOfRangeError(ApplicationBaseError):
 
 class DBQueryError(ApplicationBaseError):
     detail = "Ошибка запроса к базе данных"
+
+
+class InvalidLoginDataError(ApplicationBaseError):
+    detail = "Неверные логин или пароль для входа"

@@ -20,6 +20,7 @@ from src.models.posts import PostORM
 from src.models.comments import CommentORM
 from src.models.likes import LikeORM
 from src.models.subscriptions import SubscriptionORM
+from src.models.tokens import RefreshTokenORM
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

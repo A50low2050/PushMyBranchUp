@@ -1,6 +1,7 @@
+from datetime import timedelta
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent
@@ -32,11 +33,23 @@ class DBSettings(BaseModel):
     expire_on_commit: bool = False
 
 
+class AuthSettings(BaseModel):
+    """настройки аутентификации"""
+
+    secret_key: SecretStr
+    algorithm: str = "HS256"
+    access_token_expire_delta: timedelta = timedelta(minutes=15)
+    refresh_token_expire_delta: timedelta = timedelta(days=30)
+    refresh_token_cookie_name: str = "refresh_token"
+    access_token_blacklist_prefix: str = "blacklist:"
+
+
 class Settings(BaseSettings):
     """настройки приложения"""
 
     uvicorn: UvicornSettings
     database: DBSettings
+    auth: AuthSettings
     fastapi: FastAPISettings = FastAPISettings()
 
     model_config = SettingsConfigDict(

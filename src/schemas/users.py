@@ -33,10 +33,15 @@ class UserResponseDTO(BaseDTO):
     updated_at: datetime
 
 
-class RefreshTokenRequestDTO(BaseDTO):
-    refresh_token: str = Field(min_length=1)
+class UserGetMeResponseDTO(BaseDTO):
+    data: UserResponseDTO
+
+
+class UserAddDTO(BaseDTO):
+    username: str
+    email: EmailStr
+    hashed_password: str
 
 
 class UserUpdateDTO(BaseDTO):
-    username: str | None = Field(default=None, min_length=3, max_length=255)
-    email: EmailStr | None = Field(default=None, max_length=255)
+    username: str
