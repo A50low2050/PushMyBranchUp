@@ -27,7 +27,11 @@ logger = LogService.get_logger(__name__)
 
 
 class UsersService(BaseService):
-    async def login(self, data: UserLoginDTO) -> IssuedTokens:
+    async def login(
+        self,
+        data: UserLoginDTO,
+        cache: AsyncCacheServiceBase,
+    ) -> IssuedTokens:
         """Вход в аккаунт пользователя"""
 
         try:
@@ -41,7 +45,14 @@ class UsersService(BaseService):
         if not is_same:
             raise InvalidLoginDataError
 
-        tokens = await TokenService(self.db).update_tokens(user=user)
+        rf_token: RefreshTokenDTO | None = await self.db.rf_tokens.get_one_or_none(
+            owner_id=user.id,
+        )  # type: ignore
+        if rf_token:
+            await TokenService(self.db).blacklist_ac_token(
+                rf_token=rf_token, cache=cache
+            )
+        tokens = await TokenService(self.db).update_tokens(user=user, cache=cache)
         await self.db.commit()
         return tokens
 
@@ -54,22 +65,16 @@ class UsersService(BaseService):
 
         try:
             user: UserDTO = await self.db.users.get_one(
-                user_id=token.owner_id
+                id=token.owner_id
             )  # type: ignore
         except ObjectNotFoundError as exc:
             raise UserNotFoundError from exc
 
-        jti = token.access_jti
-        key = f"{settings.auth.access_token_blacklist_prefix}{jti}"
-
-        access_lifetime = settings.auth.access_token_expire_delta.total_seconds()
-        access_exp = token.created_at.timestamp() + access_lifetime
-        remaining_ttl = int(float(access_exp) - datetime.now(UTC).timestamp())
-
-        if remaining_ttl > 0:
-            await cache.setx(key, 1, remaining_ttl)
-
-        tokens = await TokenService(self.db).update_tokens(user=user)
+        await TokenService(self.db).blacklist_ac_token(rf_token=token, cache=cache)
+        tokens = await TokenService(self.db).update_tokens(
+            user=user,
+            cache=cache,
+        )
         await self.db.commit()
         return tokens
 
@@ -117,9 +122,9 @@ class UsersService(BaseService):
         await self.db.rf_tokens.delete(owner_id=user_id)
         await self.db.commit()
 
-    async def update_user(self, user_id: int, data: UserUpdateDTO) -> int:
+    async def update_user(self, user_id: int, data: UserUpdateDTO) -> UserResponseDTO:
         try:
-            await self.db.users.get_one(id=user_id)
+            user: UserDTO = await self.db.users.get_one(id=user_id)  # type: ignore
         except ObjectNotFoundError as exc:
             raise UserNotFoundError from exc
 
@@ -128,5 +133,9 @@ class UsersService(BaseService):
         except ObjectAlreadyExistsError as exc:
             raise UserAlreadyExistsError from exc
 
+        if not result:
+            raise UserNotFoundError
+
         await self.db.commit()
-        return result
+        user_schema = UserResponseDTO.model_validate(user)
+        return user_schema

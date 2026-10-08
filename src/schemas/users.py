@@ -33,6 +33,10 @@ class UserResponseDTO(BaseDTO):
     updated_at: datetime
 
 
+class UserGetMeResponseDTO(BaseDTO):
+    data: UserResponseDTO
+
+
 class UserAddDTO(BaseDTO):
     username: str
     email: EmailStr

@@ -13,6 +13,7 @@ from src.schemas.tokens import (
 )
 from src.schemas.users import UserDTO
 from src.services.base import BaseService
+from src.utils.cacheserv import AsyncCacheServiceBase
 from src.utils.hashserv import HashService
 
 
@@ -65,15 +66,33 @@ class TokenService(BaseService):
         )
         return decoded_token
 
-    # TODO: доделать когда создастся таблица с токенами
     async def get_refresh_token(self, hashed_token: str) -> RefreshTokenDTO:
-        # obj = await self.db.rf_tokens.get_one(hashed_data=hashed_token)
-        # return obj
-        raise NotImplementedError
+        obj: RefreshTokenDTO = await self.db.rf_tokens.get_one(
+            hashed_data=hashed_token,
+        )  # type: ignore
+        return obj
+
+    async def blacklist_ac_token(
+        self,
+        rf_token: RefreshTokenDTO,
+        cache: AsyncCacheServiceBase,
+    ) -> bool:
+        jti = rf_token.access_jti
+        key = f"{settings.auth.access_token_blacklist_prefix}{jti}"
+
+        access_lifetime = settings.auth.access_token_expire_delta.total_seconds()
+        access_exp = rf_token.created_at.timestamp() + access_lifetime
+        remaining_ttl = int(float(access_exp) - datetime.now(UTC).timestamp())
+
+        if remaining_ttl > 0:
+            await cache.setx(key, 1, remaining_ttl)
+            return True
+        return False
 
     async def update_tokens(
         self,
         user: UserDTO,
+        cache: AsyncCacheServiceBase,
     ) -> IssuedTokens:
 
         payload = {"sub": str(user.id)}
