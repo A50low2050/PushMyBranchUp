@@ -223,3 +223,4 @@ __marimo__/
 # Custom
 files/
 logs/
+test_db.sqlite3
