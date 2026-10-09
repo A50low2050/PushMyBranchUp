@@ -14,6 +14,14 @@ class PostCreateDTO(BaseDTO):
         return value
 
 
+class PostDTO(BaseDTO):
+    id: int
+    user_id: int
+    content: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class PostResponseDTO(BaseDTO):
     id: int
     user_id: int

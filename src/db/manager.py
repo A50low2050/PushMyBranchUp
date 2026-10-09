@@ -4,6 +4,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.repos.auth import RefreshTokensRepo
+from src.repos.likes import LikesRepo
+from src.repos.posts import PostsRepo
 from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
@@ -25,6 +27,8 @@ class DBManager:
         # тут будут классы-репозитории для работы с таблицами
         self.users = UsersRepo(self.session)
         self.rf_tokens = RefreshTokensRepo(self.session)
+        self.posts = PostsRepo(self.session)
+        self.likes = LikesRepo(self.session)
         return self
 
     async def __aexit__(
