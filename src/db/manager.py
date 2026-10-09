@@ -7,6 +7,7 @@ from src.repos.auth import RefreshTokensRepo
 from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
+from src.repos.posts import PostsRepo
 
 logger = LogService.get_logger()
 
@@ -25,6 +26,7 @@ class DBManager:
         # тут будут классы-репозитории для работы с таблицами
         self.users = UsersRepo(self.session)
         self.rf_tokens = RefreshTokensRepo(self.session)
+        self.posts = PostsRepo(self.session)
         return self
 
     async def __aexit__(
