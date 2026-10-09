@@ -41,3 +41,7 @@ class DBQueryError(ApplicationBaseError):
 
 class InvalidLoginDataError(ApplicationBaseError):
     detail = "Неверные логин или пароль для входа"
+
+
+class PostNotFoundError(ApplicationBaseError):
+    detail = "Пост не найден"
