@@ -2,6 +2,9 @@ from fastapi import APIRouter, Query
 
 from src.schemas.errors import ErrorResponseDTO
 from src.schemas.posts import PostCreateDTO, PostResponseDTO
+from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.db import DatabaseDep
+from src.services.posts import PostsService
 
 router = APIRouter(
     prefix="/posts",
@@ -10,9 +13,15 @@ router = APIRouter(
 
 
 @router.post("", response_model=PostResponseDTO)
-async def create_post(data: PostCreateDTO) -> PostResponseDTO:
-    # TODO: Implement after the service layer is ready
-    raise NotImplementedError
+async def create_post(
+    data: PostCreateDTO,
+    user_id: GetSubDep,
+    db: DatabaseDep,
+) -> PostResponseDTO:
+    return await PostsService(db).create_post(
+        data=data,
+        user_id=user_id,
+    )
 
 
 @router.get(

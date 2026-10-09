@@ -30,3 +30,13 @@ class PostResponseDTO(BaseDTO):
     likes_count: int
     comments_count: int
     is_liked: bool
+
+
+class PostAddDTO(BaseDTO):
+    user_id: int
+    content: str
+
+
+class PostDTO(PostAddDTO):
+    id: int
+    created_at: datetime
