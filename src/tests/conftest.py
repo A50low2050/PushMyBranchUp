@@ -55,6 +55,8 @@ def route_path(suffix: str) -> str:
         "/auth/me": "/v1/auth/me",
         "/auth/refresh": "/v1/auth/refresh",
         "/auth/logout": "/v1/auth/logout",
+        "/likes": "/v1/likes",      
+        "/likes/{post_id}": "/v1/likes/{post_id}",
     }
     if suffix in known_paths:
         return known_paths[suffix]
@@ -137,8 +139,8 @@ async def registered_user(client, register_payload):
 
 
 @pytest_asyncio.fixture
-async def auth_headers(client, registered_user, register_payload) -> dict[str, str]:
-    """Получает access-токен через /auth/login и возвращает заголовки."""
+async def auth_headers(client, registered_user, register_payload) -> dict:
+    """Получает access-токен через /auth/login и возвращает заголовки + user_id."""
     response = await client.post(
         route_path("/auth/login"),
         json={
@@ -149,4 +151,26 @@ async def auth_headers(client, registered_user, register_payload) -> dict[str, s
     assert response.status_code == 200, response.text
     data = response.json()
     token = data["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    
+    # Возвращает словарь, который можно распаковать в тестах
+    return {
+        "headers": {"Authorization": f"Bearer {token}"},
+        "user_id": registered_user["id"]
+    }
+
+
+@pytest_asyncio.fixture
+async def created_post(registered_user):
+    """Создаёт пост в тестовой БД для пользователя registered_user."""
+    from src.models.posts import PostORM
+
+    async with test_sessionmaker() as session:
+        post = PostORM(
+            user_id=registered_user["id"],
+            content="Test Post Content",
+        )
+        session.add(post)
+        await session.commit()
+        await session.refresh(post)
+
+    return {"id": post.id, "user_id": post.user_id}
