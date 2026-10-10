@@ -8,7 +8,9 @@ pytestmark = pytest.mark.likes
 class TestLikes:
     """Сценарии взаимодействия с лайками."""
 
-    async def test_toggle_like_success(self, client, auth_headers, created_post, registered_user):
+    async def test_toggle_like_success(
+        self, client, auth_headers, created_post, registered_user
+    ):
         """Успешная постановка лайка возвращает 200 и is_liked=True."""
         post_id = created_post["id"]
         url = f"/v1/posts/{post_id}/like"
@@ -50,4 +52,4 @@ class TestLikes:
 
         response2 = await client.put(url, headers=auth_headers)
         assert response2.status_code == 200
-        assert response2.json()["is_liked"] is False
+        assert response2.json()["is_liked"] is False

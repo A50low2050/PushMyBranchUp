@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.repos.auth import RefreshTokensRepo
+from src.repos.comments import CommentsRepo
 from src.repos.likes import LikesRepo
 from src.repos.posts import PostsRepo
 from src.repos.users import UsersRepo
@@ -29,6 +30,7 @@ class DBManager:
         self.rf_tokens = RefreshTokensRepo(self.session)
         self.posts = PostsRepo(self.session)
         self.likes = LikesRepo(self.session)
+        self.comments = CommentsRepo(self.session)
         return self
 
     async def __aexit__(

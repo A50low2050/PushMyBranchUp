@@ -14,9 +14,25 @@ class CommentCreateDTO(BaseDTO):
         return value
 
 
+class CommentDTO(BaseDTO):
+    id: int
+    user_id: int
+    post_id: int
+    content: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class CommentAddDTO(BaseDTO):
+    user_id: int
+    post_id: int
+    content: str
+
+
 class CommentResponseDTO(BaseDTO):
     id: int
     post_id: int
     user_id: int
     content: str
     created_at: datetime
+    updated_at: datetime
