@@ -118,6 +118,8 @@ async def refresh_token(
             token=token,
             cache=cache,
         )
+    except UserNotFoundError as exc:
+        raise UserNotFoundHTTPError from exc
     except InvalidLoginDataError as exc:
         raise InvalidLoginDataHTTPError from exc
 

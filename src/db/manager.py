@@ -9,7 +9,6 @@ from src.repos.posts import PostsRepo
 from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
-from src.repos.posts import PostsRepo
 
 logger = LogService.get_logger()
 

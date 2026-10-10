@@ -12,7 +12,9 @@ class TestRegistration:
 
     async def test_register_success(self, client, register_payload):
         """Успешная регистрация возвращает 200 и данные пользователя."""
-        response = await client.post(route_path("/auth/register"), json=register_payload)
+        response = await client.post(
+            route_path("/auth/register"), json=register_payload
+        )
         assert response.status_code == 200, response.text
 
         body = response.json()
@@ -35,11 +37,19 @@ class TestRegistration:
         "payload",
         [
             pytest.param(
-                {"username": "ab", "email": "short@example.com", "password": "Password123!"},
+                {
+                    "username": "ab",
+                    "email": "short@example.com",
+                    "password": "Password123!",
+                },
                 id="username_too_short",
             ),
             pytest.param(
-                {"username": "validuser", "email": "shortpw@example.com", "password": "short"},
+                {
+                    "username": "validuser",
+                    "email": "shortpw@example.com",
+                    "password": "short",
+                },
                 id="password_too_short",
             ),
         ],
@@ -55,7 +65,7 @@ class TestLogin:
 
     async def test_login_success(self, client, register_payload, registered_user):
         """Вход с валидными данными возвращает access- и refresh-токены.
-        
+
         registered_user уже создан через register_payload, просто логируемся.
         """
         response = await client.post(

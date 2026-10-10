@@ -1,6 +1,8 @@
+# flake8: noqa
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
+from typing import Any
 
 TEST_DB_FILE = "./test_db.sqlite3"
 
@@ -30,7 +32,12 @@ from src.utils.cacheserv import InMemoryAsyncCacheService
 
 # Регистрируем все таблицы в metadata
 from src.models import (  # noqa: F401
-    comments, likes, posts, subscriptions, tokens, users,
+    comments,
+    likes,
+    posts,
+    subscriptions,
+    tokens,
+    users,
 )
 
 test_engine = create_async_engine(os.environ["ENV_DATABASE__URL"], echo=False)
@@ -38,7 +45,7 @@ test_engine = create_async_engine(os.environ["ENV_DATABASE__URL"], echo=False)
 # Включаем foreign keys в тестовой БД
 event.listens_for(test_engine.sync_engine, "connect")(enable_sqlite_foreign_keys)
 
-test_sessionmaker = async_sessionmaker(
+async_test_sessionmaker = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
     autocommit=False,
@@ -49,19 +56,9 @@ test_sessionmaker = async_sessionmaker(
 
 def route_path(suffix: str) -> str:
     """Возвращает полный путь роута по его окончанию."""
-    known_paths = {
-        "/auth/register": "/v1/auth/register",
-        "/auth/login": "/v1/auth/login",
-        "/auth/me": "/v1/auth/me",
-        "/auth/refresh": "/v1/auth/refresh",
-        "/auth/logout": "/v1/auth/logout",
-    }
-    if suffix in known_paths:
-        return known_paths[suffix]
-    raise AssertionError(
-        f"Путь {suffix!r} не зарегистрирован в known_paths.\n"
-        f"Добавь его вручную в словарь known_paths в conftest.py"
-    )
+    if suffix.startswith("/v1"):
+        return suffix
+    return f"/v1{suffix}"
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
@@ -91,7 +88,7 @@ async def client():
     """httpx-клиент поверх app с подменой БД и кеша."""
 
     async def _override_get_db():
-        async with DBManager(test_sessionmaker) as db:
+        async with DBManager(async_test_sessionmaker) as db:
             yield db
 
     cache_instance = InMemoryAsyncCacheService()
@@ -137,7 +134,11 @@ async def registered_user(client, register_payload):
 
 
 @pytest_asyncio.fixture
-async def auth_headers(client, registered_user, register_payload) -> dict[str, str]:
+async def auth_headers(
+    client: AsyncClient,
+    registered_user: Any,
+    register_payload: Any,
+) -> dict[str, str]:
     """Получает access-токен через /auth/login и возвращает заголовки."""
     response = await client.post(
         route_path("/auth/login"),

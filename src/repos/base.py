@@ -35,7 +35,7 @@ class BaseRepo:
             obj = result.scalar_one()
         except NoResultFound as exc:
             raise ObjectNotFoundError from exc
-        except StatementError as exc:
+        except (StatementError, DBAPIError) as exc:
             raise DBQueryError from exc
         return self.schema.model_validate(obj)
 
@@ -54,7 +54,7 @@ class BaseRepo:
 
         try:
             result = await self.session.execute(query)
-        except StatementError as exc:
+        except (StatementError, DBAPIError) as exc:
             raise DBQueryError from exc
 
         return [self.schema.model_validate(obj) for obj in result.scalars().all()]
@@ -67,7 +67,7 @@ class BaseRepo:
         try:
             result = await self.session.execute(query)
             obj = result.scalars().one_or_none()
-        except StatementError as exc:
+        except (StatementError, DBAPIError) as exc:
             raise DBQueryError from exc
 
         if obj is None:
@@ -85,6 +85,8 @@ class BaseRepo:
             result = await self.session.execute(add_obj_stmt)
         except IntegrityError as exc:
             raise ObjectAlreadyExistsError from exc
+        except DBAPIError as exc:
+            raise DBQueryError from exc
         objs = result.scalars().all()
         return [self.schema.model_validate(item) for item in objs]
 
@@ -96,6 +98,8 @@ class BaseRepo:
             result = await self.session.execute(add_obj_stmt)
         except IntegrityError as exc:
             raise ObjectAlreadyExistsError from exc
+        except DBAPIError as exc:
+            raise DBQueryError from exc
 
         obj = result.scalars().one()
         return self.schema.model_validate(obj)
