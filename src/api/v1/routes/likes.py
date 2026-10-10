@@ -2,11 +2,11 @@ from fastapi import APIRouter
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
-from src.api.v1.errors import NotFoundHTTPError
+from src.api.v1.errors import DBQueryHTTPError, PostNotFoundHTTPError
 from src.schemas.errors import ErrorResponseDTO
 from src.schemas.likes import LikeResponseDTO
 from src.services.likes import LikesService
-from src.utils.exceptions import PostNotFoundError
+from src.utils.exceptions import DBQueryError, PostNotFoundError
 
 router = APIRouter(
     prefix="/posts",
@@ -18,6 +18,7 @@ router = APIRouter(
     "/{post_id}/like",
     response_model=LikeResponseDTO,
     responses={
+        400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
         404: {"model": ErrorResponseDTO},
     },
@@ -33,7 +34,9 @@ async def toggle_like(
             user_id=sub,
         )
     except PostNotFoundError as exc:
-        raise NotFoundHTTPError from exc
+        raise PostNotFoundHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     return result
 

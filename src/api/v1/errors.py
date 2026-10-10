@@ -24,6 +24,12 @@ class UserNotFoundHTTPError(ApplicationHTTPError):
     detail = "Пользователь не найден"
 
 
+class PostNotFoundHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_404_NOT_FOUND
+    error = "POST_NOT_FOUND"
+    detail = "Пост не найден"
+
+
 class ObjectAlreadyExistsHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_409_CONFLICT
     error = "OBJECT_ALREADY_EXISTS"
@@ -68,3 +74,9 @@ class BadRequestHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_400_BAD_REQUEST
     error = "BAD_REQUEST"
     detail = "Запрошенное действие невозможно выполнить"
+
+
+class DBQueryHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error = "DB_QUERY_ERROR"
+    detail = "Ошибка запроса к базе данных"

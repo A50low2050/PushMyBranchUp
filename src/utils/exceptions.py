@@ -43,5 +43,5 @@ class InvalidLoginDataError(ApplicationBaseError):
     detail = "Неверные логин или пароль для входа"
 
 
-class PostNotFoundError(ApplicationBaseError):
+class PostNotFoundError(ObjectNotFoundError):
     detail = "Пост не найден"
