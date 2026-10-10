@@ -5,13 +5,6 @@ import pytest
 pytestmark = pytest.mark.likes
 
 
-def get_headers(auth_headers):
-    """Извлекает HTTP-заголовки из auth_headers."""
-    if isinstance(auth_headers, dict) and "headers" in auth_headers:
-        return auth_headers["headers"]
-    return auth_headers
-
-
 class TestLikes:
     """Сценарии взаимодействия с лайками."""
 
@@ -20,7 +13,7 @@ class TestLikes:
         post_id = created_post["id"]
         url = f"/v1/posts/{post_id}/like"
 
-        response = await client.put(url, headers=get_headers(auth_headers))
+        response = await client.put(url, headers=auth_headers)
 
         assert response.status_code == 200, response.text
         data = response.json()
@@ -42,7 +35,7 @@ class TestLikes:
         fake_post_id = 999999
         url = f"/v1/posts/{fake_post_id}/like"
 
-        response = await client.put(url, headers=get_headers(auth_headers))
+        response = await client.put(url, headers=auth_headers)
 
         assert response.status_code == 404
 
@@ -51,12 +44,10 @@ class TestLikes:
         post_id = created_post["id"]
         url = f"/v1/posts/{post_id}/like"
 
-        # 1. Ставим лайк
-        response1 = await client.put(url, headers=get_headers(auth_headers))
+        response1 = await client.put(url, headers=auth_headers)
         assert response1.status_code == 200
         assert response1.json()["is_liked"] is True
 
-        # 2. Убираем лайк тем же запросом
-        response2 = await client.put(url, headers=get_headers(auth_headers))
+        response2 = await client.put(url, headers=auth_headers)
         assert response2.status_code == 200
         assert response2.json()["is_liked"] is False

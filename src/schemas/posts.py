@@ -23,13 +23,14 @@ class PostDTO(BaseDTO):
 
 
 class PostResponseDTO(BaseDTO):
-    id: int
+    post_id: int
     user_id: int
     content: str
-    created_at: datetime
     likes_count: int
-    comments_count: int
     is_liked: bool
+    comments_count: int
+    created_at: datetime
+    updated_at: datetime
 
 
 class PostAddDTO(BaseDTO):
@@ -37,6 +38,12 @@ class PostAddDTO(BaseDTO):
     content: str
 
 
-class PostDTO(PostAddDTO):
-    id: int
-    created_at: datetime
+class PostFeedResponseDTO(BaseDTO):
+    page: int
+    per_page: int
+    total_pages: int
+    data: list[PostResponseDTO]
+
+
+class SinglePostResponseDTO(BaseDTO):
+    data: PostResponseDTO
