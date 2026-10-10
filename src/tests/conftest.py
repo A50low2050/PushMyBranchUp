@@ -1,4 +1,3 @@
-# flake8: noqa
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
@@ -151,3 +150,20 @@ async def auth_headers(
     data = response.json()
     token = data["access_token"]
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def created_post(registered_user):
+    """Создаёт пост в тестовой БД для пользователя registered_user."""
+    from src.models.posts import PostORM
+
+    async with async_test_sessionmaker() as session:
+        post = PostORM(
+            user_id=registered_user["id"],
+            content="Test Post Content",
+        )
+        session.add(post)
+        await session.commit()
+        await session.refresh(post)
+
+    return {"id": post.id, "user_id": post.user_id}
