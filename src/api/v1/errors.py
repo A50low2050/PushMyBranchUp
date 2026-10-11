@@ -30,6 +30,12 @@ class PostNotFoundHTTPError(ApplicationHTTPError):
     detail = "Пост не найден"
 
 
+class CommentNotFoundHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_404_NOT_FOUND
+    error = "COMMENT_NOT_FOUND"
+    detail = "Комментарий не найден"
+
+
 class ObjectAlreadyExistsHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_409_CONFLICT
     error = "OBJECT_ALREADY_EXISTS"

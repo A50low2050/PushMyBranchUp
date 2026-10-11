@@ -96,7 +96,12 @@ class PostsService(BaseService):
         )
         await self.db.commit()
 
-    async def edit_post(self, user_id: int, post_id: int, data: PostEditDTO,):
+    async def edit_post(
+        self,
+        user_id: int,
+        post_id: int,
+        data: PostEditDTO,
+    ):
         try:
             await self.db.posts.get_one(
                 user_id=user_id,

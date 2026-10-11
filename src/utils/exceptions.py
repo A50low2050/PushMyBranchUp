@@ -45,3 +45,7 @@ class InvalidLoginDataError(ApplicationBaseError):
 
 class PostNotFoundError(ObjectNotFoundError):
     detail = "Пост не найден"
+
+
+class CommentNotFoundError(ObjectNotFoundError):
+    detail = "Комментарий не найден"
