@@ -22,6 +22,10 @@ class PostDTO(BaseDTO):
     updated_at: datetime
 
 
+class PostEditDTO(BaseDTO):
+    content: str
+
+
 class PostResponseDTO(BaseDTO):
     post_id: int
     user_id: int

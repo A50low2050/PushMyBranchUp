@@ -4,6 +4,7 @@ from src.schemas.posts import (
     PostAddDTO,
     PostCreateDTO,
     PostDTO,
+    PostEditDTO,
     PostResponseDTO,
 )
 from src.services.base import BaseService
@@ -74,3 +75,35 @@ class PostsService(BaseService):
             user_id=user_id,
         )
         return posts, total
+
+    async def delete_post(self, post_id: int, user_id: int):
+        try:
+            await self.db.posts.get_one(
+                user_id=user_id,
+                id=post_id,
+            )
+        except ObjectNotFoundError as exc:
+            raise PostNotFoundError(str(exc)) from exc
+
+        await self.db.comments.delete(
+            post_id=post_id,
+        )
+        await self.db.likes.delete(
+            post_id=post_id,
+        )
+        await self.db.posts.delete(
+            id=post_id,
+        )
+        await self.db.commit()
+
+    async def edit_post(self, user_id: int, post_id: int, data: PostEditDTO,):
+        try:
+            await self.db.posts.get_one(
+                user_id=user_id,
+                id=post_id,
+            )
+        except ObjectNotFoundError as exc:
+            raise PostNotFoundError(str(exc)) from exc
+
+        await self.db.posts.update(data=data)
+        await self.db.commit()

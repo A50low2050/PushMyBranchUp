@@ -124,3 +124,28 @@ async def get_post(
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
     return SinglePostResponseDTO(data=post)
+
+
+@router.delete(
+    "/{post_id}",
+    responses={
+        400: {"model": ErrorResponseDTO},
+        401: {"model": ErrorResponseDTO},
+        404: {"model": ErrorResponseDTO},
+    },
+)
+async def get_delete(
+    post_id: int,
+    sub: GetSubDep,
+    db: DatabaseDep,
+) -> SinglePostResponseDTO:
+    try:
+        post = await PostsService(db).delete_post(
+            post_id=post_id,
+            user_id=sub,
+        )
+    except PostNotFoundError as exc:
+        raise PostNotFoundHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
+    return SinglePostResponseDTO(data=post)
