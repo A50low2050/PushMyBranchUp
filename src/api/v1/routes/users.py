@@ -1,182 +1,48 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter
 
-from src.api.v1.dependencies.cache import CacheDep
 from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.dependencies.pagination import PaginationParams
 from src.api.v1.errors import (
-    InvalidLoginDataHTTPError,
-    UserAlreadyExistsHTTPError,
-    UserNotFoundHTTPError,
+    DBQueryHTTPError,
 )
 from src.schemas.errors import ErrorResponseDTO
-from src.schemas.tokens import IssuedTokens
 
 from src.api.v1.dependencies.auth import (
-    GetRefreshTokenDep,
     GetSubDep,
 )
 
 from src.schemas.users import (
-    UserGetMeResponseDTO,
-    UserLoginDTO,
-    UserRegisterDTO,
-    UserUpdateDTO,
+    UserGetAllResponseDTO,
 )
 from src.utils.exceptions import (
-    InvalidLoginDataError,
-    UserAlreadyExistsError,
-    UserNotFoundError,
+    DBQueryError,
 )
 
 from src.services.users import UsersService
-from src.config import settings
 
 router = APIRouter(
-    prefix="/auth",
-    tags=["Авторизация и аутентификация"],
+    prefix="/users",
+    tags=["Пользователи"],
 )
 
 
 @router.get(
-    "/me",
+    "",
     responses={
         401: {"model": ErrorResponseDTO},
     },
 )
-async def get_me(
-    sub: GetSubDep,
+async def get_users(
+    _: GetSubDep,
+    pagination: PaginationParams,
     db: DatabaseDep,
-) -> UserGetMeResponseDTO:
+) -> UserGetAllResponseDTO:
     try:
-        user = await UsersService(db).get_user(user_id=sub)
-    except UserNotFoundError as exc:
-        raise UserNotFoundHTTPError from exc
-
-    return UserGetMeResponseDTO(data=user)
-
-
-@router.post(
-    "/register",
-    responses={
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def register(
-    data: UserRegisterDTO,
-    db: DatabaseDep,
-) -> UserGetMeResponseDTO:
-    try:
-        user = await UsersService(db).register(data=data)
-    except UserAlreadyExistsError as exc:
-        raise UserAlreadyExistsHTTPError from exc
-
-    return UserGetMeResponseDTO(data=user)
-
-
-@router.post(
-    "/login",
-    responses={
-        401: {"model": ErrorResponseDTO},
-    },
-)
-async def login(
-    data: UserLoginDTO,
-    response: Response,
-    db: DatabaseDep,
-    cache: CacheDep,
-) -> IssuedTokens:
-    try:
-        tokens = await UsersService(db).login(
-            data=data,
-            cache=cache,
+        users = await UsersService(db).get_users(
+            limit=pagination.limit,
+            offset=pagination.offset,
         )
-    except InvalidLoginDataError as exc:
-        raise InvalidLoginDataHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
-    response.set_cookie(
-        key=settings.auth.refresh_token_cookie_name,
-        value=tokens.refresh_token,
-        httponly=True,
-    )
-    return tokens
-
-
-@router.post(
-    "/refresh",
-    responses={
-        401: {"model": ErrorResponseDTO},
-    },
-)
-async def refresh_token(
-    token: GetRefreshTokenDep,
-    response: Response,
-    db: DatabaseDep,
-    cache: CacheDep,
-) -> IssuedTokens:
-
-    try:
-        tokens = await UsersService(db).refresh(
-            token=token,
-            cache=cache,
-        )
-    except UserNotFoundError as exc:
-        raise UserNotFoundHTTPError from exc
-    except InvalidLoginDataError as exc:
-        raise InvalidLoginDataHTTPError from exc
-
-    response.set_cookie(
-        key=settings.auth.refresh_token_cookie_name,
-        value=tokens.refresh_token,
-        httponly=True,
-    )
-    return tokens
-
-
-@router.post(
-    "/logout",
-    responses={
-        401: {"model": ErrorResponseDTO},
-    },
-    status_code=204,
-)
-async def logout(
-    response: Response,
-    sub: GetSubDep,
-    rf_token: GetRefreshTokenDep,
-    cache: CacheDep,
-    db: DatabaseDep,
-) -> None:
-    try:
-        await UsersService(db).logout(
-            rf_token=rf_token,
-            user_id=sub,
-            cache=cache,
-        )
-    except InvalidLoginDataError as exc:
-        raise InvalidLoginDataHTTPError from exc
-
-    response.delete_cookie(settings.auth.refresh_token_cookie_name)
-
-
-@router.patch(
-    "/me",
-    responses={
-        401: {"model": ErrorResponseDTO},
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def update_me(
-    data: UserUpdateDTO,
-    sub: GetSubDep,
-    db: DatabaseDep,
-) -> UserGetMeResponseDTO:
-    try:
-        user = await UsersService(db).update_user(
-            user_id=sub,
-            data=data,
-        )
-    except UserNotFoundError as exc:
-        raise UserNotFoundHTTPError from exc
-    except UserAlreadyExistsError as exc:
-        raise UserAlreadyExistsHTTPError from exc
-
-    return UserGetMeResponseDTO(data=user)
+    return UserGetAllResponseDTO(data=users)

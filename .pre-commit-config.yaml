@@ -7,12 +7,14 @@ repos:
         entry: black --check
         language: system
         types: [python]
+        stages: [pre-push]
 
     -   id: flake8
         name: Linting with flake8
         entry: flake8
         language: system
         types: [python]
+        stages: [pre-push]
 
     -   id: mypy
         name: Type checking with mypy
@@ -20,6 +22,7 @@ repos:
         language: system
         types: [python]
         require_serial: true
+        stages: [pre-push]
 
     -   id: pytest
         name: Testing with pytest
@@ -27,4 +30,5 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+        stages: [pre-push]
 

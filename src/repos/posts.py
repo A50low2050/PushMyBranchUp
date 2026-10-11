@@ -40,7 +40,7 @@ class PostsRepo(BaseRepo):
             likes_subq.label("likes_count"),
             comments_subq.label("comments_count"),
             is_liked_subq.label("is_liked"),
-        )
+        )  # type: ignore
 
     @staticmethod
     def _row_to_dto(row: Any) -> PostResponseDTO:

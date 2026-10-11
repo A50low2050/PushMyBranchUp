@@ -37,6 +37,10 @@ class UserGetMeResponseDTO(BaseDTO):
     data: UserResponseDTO
 
 
+class UserGetAllResponseDTO(BaseDTO):
+    data: list[UserResponseDTO]
+
+
 class UserAddDTO(BaseDTO):
     username: str
     email: EmailStr

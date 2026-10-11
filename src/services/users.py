@@ -152,3 +152,7 @@ class UsersService(BaseService):
         await self.db.commit()
         user_schema.username = data.username
         return user_schema
+
+    async def get_users(self, limit: int, offset: int) -> list[UserResponseDTO]:
+        users = await self.db.users.get_all_filtered(limit=limit, offset=offset)
+        return [UserResponseDTO.model_validate(user) for user in users]
