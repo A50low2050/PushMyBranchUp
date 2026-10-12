@@ -61,7 +61,7 @@ class CommentsService(BaseService):
         self,
         post_id: int,
         comment_id: int,
-    ):
+    ) -> CommentResponseDTO:
         try:
             comment: CommentResponseDTO = await self.db.comments.get_one(
                 post_id=post_id,
@@ -77,7 +77,7 @@ class CommentsService(BaseService):
         post_id: int,
         user_id: int,
         data: CommentEditDTO,
-    ):
+    ) -> int:
         try:
             await self.db.comments.get_one(
                 id=comment_id,
@@ -87,8 +87,9 @@ class CommentsService(BaseService):
         except ObjectNotFoundError as exc:
             raise PostNotFoundError(str(exc)) from exc
 
-        await self.db.posts.update(data=data)
+        updated_count = await self.db.posts.update(data=data)
         await self.db.commit()
+        return updated_count
 
     async def delete_comment(
         self,

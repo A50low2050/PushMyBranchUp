@@ -76,7 +76,7 @@ class PostsService(BaseService):
         )
         return posts, total
 
-    async def delete_post(self, post_id: int, user_id: int):
+    async def delete_post(self, post_id: int, user_id: int) -> dict[str, int]:
         try:
             await self.db.posts.get_one(
                 user_id=user_id,
@@ -85,23 +85,28 @@ class PostsService(BaseService):
         except ObjectNotFoundError as exc:
             raise PostNotFoundError(str(exc)) from exc
 
-        await self.db.comments.delete(
+        coms_deleted_count = await self.db.comments.delete(
             post_id=post_id,
         )
-        await self.db.likes.delete(
+        likes_deleted_count = await self.db.likes.delete(
             post_id=post_id,
         )
-        await self.db.posts.delete(
+        posts_deleted_count = await self.db.posts.delete(
             id=post_id,
         )
         await self.db.commit()
+        return {
+            "comments": coms_deleted_count,
+            "likes": likes_deleted_count,
+            "posts": posts_deleted_count,
+        }
 
     async def edit_post(
         self,
         user_id: int,
         post_id: int,
         data: PostEditDTO,
-    ):
+    ) -> int:
         try:
             await self.db.posts.get_one(
                 user_id=user_id,
@@ -110,5 +115,6 @@ class PostsService(BaseService):
         except ObjectNotFoundError as exc:
             raise PostNotFoundError(str(exc)) from exc
 
-        await self.db.posts.update(data=data)
+        updated_count = await self.db.posts.update(data=data)
         await self.db.commit()
+        return updated_count
