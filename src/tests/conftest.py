@@ -169,21 +169,65 @@ async def created_post(registered_user):
 
     return {"id": post.id, "user_id": post.user_id}
 
-
 @pytest_asyncio.fixture
-async def second_user_headers(client: AsyncClient) -> dict[str, str]:
-    """Регистрирует второго пользователя и возвращает его auth-заголовки."""
-    payload = {
+async def multiple_posts(client, auth_headers):
+    """Создаёт 5 постов через API для тестов пагинации."""
+    posts = []
+    for i in range(1, 6):
+        response = await client.post(
+            "/v1/posts",
+            json={"content": f"Пост номер {i} для теста пагинации"},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200, response.text
+        posts.append(response.json()["data"])
+    return posts
+
+
+@pytest.fixture
+def second_payload() -> dict:
+    """Данные второго пользователя."""
+    return {
         "username": "seconduser",
         "email": "second@example.com",
-        "password": "StrongPass456!",
+        "password": "StrongPass123!",
     }
-    reg_resp = await client.post(route_path("/auth/register"), json=payload)
-    assert reg_resp.status_code == 200, reg_resp.text
-    login_resp = await client.post(
+
+
+@pytest_asyncio.fixture
+async def second_user_headers(client, second_payload) -> dict:
+    """Регистрирует второго пользователя и возвращает его заголовки и id."""
+    reg = await client.post(route_path("/auth/register"), json=second_payload)
+    assert reg.status_code == 200, reg.text
+    user_id = reg.json()["data"]["id"]
+
+    login = await client.post(
         route_path("/auth/login"),
-        json={"email": payload["email"], "password": payload["password"]},
+        json={
+            "email": second_payload["email"],
+            "password": second_payload["password"],
+        },
     )
-    assert login_resp.status_code == 200, login_resp.text
-    token = login_resp.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    assert login.status_code == 200, login.text
+    token = login.json()["access_token"]
+
+    return {"headers": {"Authorization": f"Bearer {token}"}, "user_id": user_id}
+
+
+@pytest_asyncio.fixture
+async def follow_author(second_user_headers, registered_user):
+    """Второй пользователь подписан на первого (запись напрямую в БД)."""
+    from src.models.subscriptions import SubscriptionORM
+
+    async with async_test_sessionmaker() as session:
+        subscription = SubscriptionORM(
+            follower_id=second_user_headers["user_id"],
+            followed_id=registered_user["id"],
+        )
+        session.add(subscription)
+        await session.commit()
+
+    return {
+        "follower_id": second_user_headers["user_id"],
+        "followed_id": registered_user["id"],
+    }

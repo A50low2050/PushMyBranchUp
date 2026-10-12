@@ -53,3 +53,5 @@ class PostNotFoundError(ObjectNotFoundError):
 
 class CommentNotFoundError(ObjectNotFoundError):
     detail = "Комментарий не найден"
+class SelfFollowError(ApplicationBaseError):
+    detail = "Подписка на самого себя невозможна"

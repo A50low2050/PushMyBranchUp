@@ -7,6 +7,7 @@ from src.repos.auth import RefreshTokensRepo
 from src.repos.comments import CommentsRepo
 from src.repos.likes import LikesRepo
 from src.repos.posts import PostsRepo
+from src.repos.subscriptions import SubscriptionsRepo
 from src.repos.users import UsersRepo
 from src.utils.exceptions import DBConnectionError
 from src.utils.logserv import LogService
@@ -30,6 +31,7 @@ class DBManager:
         self.rf_tokens = RefreshTokensRepo(self.session)
         self.posts = PostsRepo(self.session)
         self.likes = LikesRepo(self.session)
+        self.subscriptions = SubscriptionsRepo(self.session)
         self.comments = CommentsRepo(self.session)
         return self
 
