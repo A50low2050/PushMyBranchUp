@@ -23,6 +23,10 @@ class UserAlreadyExistsError(ObjectAlreadyExistsError):
     detail = "Пользователь уже существует"
 
 
+class ForbiddenError(ApplicationBaseError):
+    detail = "Доступ запрещен"
+
+
 class DBConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с базой данных"
 
@@ -47,5 +51,7 @@ class PostNotFoundError(ObjectNotFoundError):
     detail = "Пост не найден"
 
 
+class CommentNotFoundError(ObjectNotFoundError):
+    detail = "Комментарий не найден"
 class SelfFollowError(ApplicationBaseError):
     detail = "Подписка на самого себя невозможна"

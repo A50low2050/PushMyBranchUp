@@ -22,6 +22,17 @@ class PostDTO(BaseDTO):
     updated_at: datetime
 
 
+class PostEditDTO(BaseDTO):
+    content: str = Field(min_length=1, max_length=2200)
+
+    @field_validator("content")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Пост не может быть пустым")
+        return value
+
+
 class PostResponseDTO(BaseDTO):
     post_id: int
     user_id: int
@@ -47,3 +58,13 @@ class PostFeedResponseDTO(BaseDTO):
 
 class SinglePostResponseDTO(BaseDTO):
     data: PostResponseDTO
+
+
+class PostDeleteResultDTO(BaseDTO):
+    comments: int
+    likes: int
+    posts: int
+
+
+class PostDeleteResponseDTO(BaseDTO):
+    data: PostDeleteResultDTO

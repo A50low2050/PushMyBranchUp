@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import EmailStr, Field
 
@@ -33,8 +34,18 @@ class UserResponseDTO(BaseDTO):
     updated_at: datetime
 
 
-class UserGetMeResponseDTO(BaseDTO):
+class UserSingleResponseDTO(BaseDTO):
     data: UserResponseDTO
+
+
+UserGetMeResponseDTO = UserSingleResponseDTO
+
+
+class UserGetAllResponseDTO(BaseDTO):
+    page: int
+    per_page: int
+    total_pages: int
+    data: list[UserResponseDTO]
 
 
 class UserAddDTO(BaseDTO):
@@ -44,4 +55,4 @@ class UserAddDTO(BaseDTO):
 
 
 class UserUpdateDTO(BaseDTO):
-    username: str
+    username: str = Field(min_length=3, max_length=255)
