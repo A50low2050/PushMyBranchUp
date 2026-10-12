@@ -168,3 +168,22 @@ async def created_post(registered_user):
         await session.refresh(post)
 
     return {"id": post.id, "user_id": post.user_id}
+
+
+@pytest_asyncio.fixture
+async def second_user_headers(client: AsyncClient) -> dict[str, str]:
+    """Регистрирует второго пользователя и возвращает его auth-заголовки."""
+    payload = {
+        "username": "seconduser",
+        "email": "second@example.com",
+        "password": "StrongPass456!",
+    }
+    reg_resp = await client.post(route_path("/auth/register"), json=payload)
+    assert reg_resp.status_code == 200, reg_resp.text
+    login_resp = await client.post(
+        route_path("/auth/login"),
+        json={"email": payload["email"], "password": payload["password"]},
+    )
+    assert login_resp.status_code == 200, login_resp.text
+    token = login_resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

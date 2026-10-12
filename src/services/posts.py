@@ -3,12 +3,17 @@ from typing import cast
 from src.schemas.posts import (
     PostAddDTO,
     PostCreateDTO,
+    PostDeleteResultDTO,
     PostDTO,
     PostEditDTO,
     PostResponseDTO,
 )
 from src.services.base import BaseService
-from src.utils.exceptions import ObjectNotFoundError, PostNotFoundError
+from src.utils.exceptions import (
+    ForbiddenError,
+    ObjectNotFoundError,
+    PostNotFoundError,
+)
 
 
 class PostsService(BaseService):
@@ -76,14 +81,14 @@ class PostsService(BaseService):
         )
         return posts, total
 
-    async def delete_post(self, post_id: int, user_id: int) -> dict[str, int]:
+    async def delete_post(self, post_id: int, user_id: int) -> PostDeleteResultDTO:
         try:
-            await self.db.posts.get_one(
-                user_id=user_id,
-                id=post_id,
-            )
+            post = cast(PostDTO, await self.db.posts.get_one(id=post_id))
         except ObjectNotFoundError as exc:
             raise PostNotFoundError(str(exc)) from exc
+
+        if post.user_id != user_id:
+            raise ForbiddenError
 
         coms_deleted_count = await self.db.comments.delete(
             post_id=post_id,
@@ -95,26 +100,26 @@ class PostsService(BaseService):
             id=post_id,
         )
         await self.db.commit()
-        return {
-            "comments": coms_deleted_count,
-            "likes": likes_deleted_count,
-            "posts": posts_deleted_count,
-        }
+        return PostDeleteResultDTO(
+            comments=coms_deleted_count,
+            likes=likes_deleted_count,
+            posts=posts_deleted_count,
+        )
 
     async def edit_post(
         self,
         user_id: int,
         post_id: int,
         data: PostEditDTO,
-    ) -> int:
+    ) -> PostResponseDTO:
         try:
-            await self.db.posts.get_one(
-                user_id=user_id,
-                id=post_id,
-            )
+            post = cast(PostDTO, await self.db.posts.get_one(id=post_id))
         except ObjectNotFoundError as exc:
             raise PostNotFoundError(str(exc)) from exc
 
-        updated_count = await self.db.posts.update(data=data)
+        if post.user_id != user_id:
+            raise ForbiddenError
+
+        await self.db.posts.update(data=data, id=post_id)
         await self.db.commit()
-        return updated_count
+        return await self.get_post(post_id=post_id, user_id=user_id)

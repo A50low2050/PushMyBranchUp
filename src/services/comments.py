@@ -10,6 +10,7 @@ from src.schemas.comments import (
 from src.services.base import BaseService
 from src.utils.exceptions import (
     CommentNotFoundError,
+    ForbiddenError,
     ObjectNotFoundError,
     PostNotFoundError,
 )
@@ -50,12 +51,12 @@ class CommentsService(BaseService):
         if post is None:
             raise PostNotFoundError
 
-        comments: list[CommentResponseDTO] = await self.db.comments.get_all_filtered(
+        comments = await self.db.comments.get_all_filtered(
             post_id=post_id,
             limit=limit,
             offset=offset,
-        )  # type: ignore
-        return comments
+        )
+        return [CommentResponseDTO.model_validate(c) for c in comments]
 
     async def get_comment(
         self,
@@ -63,13 +64,13 @@ class CommentsService(BaseService):
         comment_id: int,
     ) -> CommentResponseDTO:
         try:
-            comment: CommentResponseDTO = await self.db.comments.get_one(
+            comment = await self.db.comments.get_one(
                 post_id=post_id,
                 id=comment_id,
-            )  # type: ignore
+            )
         except ObjectNotFoundError as exc:
             raise CommentNotFoundError(str(exc)) from exc
-        return comment
+        return CommentResponseDTO.model_validate(comment)
 
     async def update_comment(
         self,
@@ -77,19 +78,28 @@ class CommentsService(BaseService):
         post_id: int,
         user_id: int,
         data: CommentEditDTO,
-    ) -> int:
+    ) -> CommentResponseDTO:
         try:
-            await self.db.comments.get_one(
-                id=comment_id,
-                user_id=user_id,
-                post_id=post_id,
+            comment = cast(
+                CommentDTO,
+                await self.db.comments.get_one(
+                    id=comment_id,
+                    post_id=post_id,
+                ),
             )
         except ObjectNotFoundError as exc:
-            raise PostNotFoundError(str(exc)) from exc
+            raise CommentNotFoundError(str(exc)) from exc
 
-        updated_count = await self.db.posts.update(data=data)
+        if comment.user_id != user_id:
+            raise ForbiddenError
+
+        await self.db.comments.update(
+            data=data,
+            id=comment_id,
+            post_id=post_id,
+        )
         await self.db.commit()
-        return updated_count
+        return await self.get_comment(post_id=post_id, comment_id=comment_id)
 
     async def delete_comment(
         self,
@@ -98,13 +108,18 @@ class CommentsService(BaseService):
         user_id: int,
     ) -> int:
         try:
-            await self.db.comments.get_one(
-                id=comment_id,
-                user_id=user_id,
-                post_id=post_id,
+            comment = cast(
+                CommentDTO,
+                await self.db.comments.get_one(
+                    id=comment_id,
+                    post_id=post_id,
+                ),
             )
         except ObjectNotFoundError as exc:
             raise CommentNotFoundError(str(exc)) from exc
+
+        if comment.user_id != user_id:
+            raise ForbiddenError
 
         deleted_count = await self.db.comments.delete(
             id=comment_id,

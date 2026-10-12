@@ -23,6 +23,10 @@ class UserAlreadyExistsError(ObjectAlreadyExistsError):
     detail = "Пользователь уже существует"
 
 
+class ForbiddenError(ApplicationBaseError):
+    detail = "Доступ запрещен"
+
+
 class DBConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с базой данных"
 

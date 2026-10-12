@@ -1,34 +1,33 @@
 from fastapi import APIRouter, Response
 
-from src.api.v1.dependencies.cache import CacheDep
-from src.api.v1.dependencies.db import DatabaseDep
-from src.api.v1.errors import (
-    InvalidLoginDataHTTPError,
-    UserAlreadyExistsHTTPError,
-    UserNotFoundHTTPError,
-)
-from src.schemas.errors import ErrorResponseDTO
-from src.schemas.tokens import IssuedTokens
-
 from src.api.v1.dependencies.auth import (
     GetRefreshTokenDep,
     GetSubDep,
 )
-
+from src.api.v1.dependencies.cache import CacheDep
+from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.errors import (
+    DBQueryHTTPError,
+    InvalidLoginDataHTTPError,
+    UserAlreadyExistsHTTPError,
+    UserNotFoundHTTPError,
+)
+from src.config import settings
+from src.schemas.errors import ErrorResponseDTO
+from src.schemas.tokens import IssuedTokens
 from src.schemas.users import (
     UserGetMeResponseDTO,
     UserLoginDTO,
     UserRegisterDTO,
     UserUpdateDTO,
 )
+from src.services.users import UsersService
 from src.utils.exceptions import (
+    DBQueryError,
     InvalidLoginDataError,
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-
-from src.services.users import UsersService
-from src.config import settings
 
 router = APIRouter(
     prefix="/auth",
@@ -50,6 +49,8 @@ async def get_me(
         user = await UsersService(db).get_user(user_id=sub)
     except UserNotFoundError as exc:
         raise UserNotFoundHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     return UserGetMeResponseDTO(data=user)
 
@@ -57,6 +58,7 @@ async def get_me(
 @router.post(
     "/register",
     responses={
+        400: {"model": ErrorResponseDTO},
         409: {"model": ErrorResponseDTO},
     },
 )
@@ -68,6 +70,8 @@ async def register(
         user = await UsersService(db).register(data=data)
     except UserAlreadyExistsError as exc:
         raise UserAlreadyExistsHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     return UserGetMeResponseDTO(data=user)
 
@@ -75,6 +79,7 @@ async def register(
 @router.post(
     "/login",
     responses={
+        400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
     },
 )
@@ -91,6 +96,8 @@ async def login(
         )
     except InvalidLoginDataError as exc:
         raise InvalidLoginDataHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     response.set_cookie(
         key=settings.auth.refresh_token_cookie_name,
@@ -103,6 +110,7 @@ async def login(
 @router.post(
     "/refresh",
     responses={
+        400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
     },
 )
@@ -122,6 +130,8 @@ async def refresh_token(
         raise UserNotFoundHTTPError from exc
     except InvalidLoginDataError as exc:
         raise InvalidLoginDataHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     response.set_cookie(
         key=settings.auth.refresh_token_cookie_name,
@@ -134,6 +144,7 @@ async def refresh_token(
 @router.post(
     "/logout",
     responses={
+        400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
     },
     status_code=204,
@@ -153,6 +164,8 @@ async def logout(
         )
     except InvalidLoginDataError as exc:
         raise InvalidLoginDataHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     response.delete_cookie(settings.auth.refresh_token_cookie_name)
 
@@ -160,6 +173,7 @@ async def logout(
 @router.patch(
     "/me",
     responses={
+        400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
         409: {"model": ErrorResponseDTO},
     },
@@ -178,5 +192,7 @@ async def update_me(
         raise UserNotFoundHTTPError from exc
     except UserAlreadyExistsError as exc:
         raise UserAlreadyExistsHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
 
     return UserGetMeResponseDTO(data=user)

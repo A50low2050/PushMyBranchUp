@@ -39,4 +39,19 @@ class CommentResponseDTO(BaseDTO):
 
 
 class CommentEditDTO(BaseDTO):
-    content: str
+    content: str = Field(min_length=1, max_length=2200)
+
+    @field_validator("content")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Комментарий не может быть пустым")
+        return value
+
+
+class CommentDeleteDataDTO(BaseDTO):
+    deleted_count: int
+
+
+class CommentDeleteResponseDTO(BaseDTO):
+    data: CommentDeleteDataDTO

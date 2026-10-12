@@ -33,8 +33,11 @@ class UserResponseDTO(BaseDTO):
     updated_at: datetime
 
 
-class UserGetMeResponseDTO(BaseDTO):
+class UserSingleResponseDTO(BaseDTO):
     data: UserResponseDTO
+
+
+UserGetMeResponseDTO = UserSingleResponseDTO
 
 
 class UserGetAllResponseDTO(BaseDTO):
@@ -48,4 +51,4 @@ class UserAddDTO(BaseDTO):
 
 
 class UserUpdateDTO(BaseDTO):
-    username: str
+    username: str = Field(min_length=3, max_length=255)

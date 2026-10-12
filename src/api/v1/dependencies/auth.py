@@ -48,9 +48,14 @@ class AccessTokenResolver:
         cache: CacheDep,
         payload: Annotated[dict, Depends(decode)],
     ) -> int:
-        sub: int | None = payload.get("sub")
-        if not sub:
+        raw_sub = payload.get("sub")
+        if not raw_sub:
             raise InvalidTokenHTTPError("В токене отсутствует поле 'sub'")
+        try:
+            sub = int(raw_sub)
+        except (ValueError, TypeError) as exc:
+            raise InvalidTokenHTTPError("Неверный формат 'sub' в токене") from exc
+
         jti: str | None = payload.get("jti")
         if not jti:
             raise InvalidTokenHTTPError("В токене отсутствует поле 'jti'")

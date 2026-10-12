@@ -3,15 +3,25 @@ from fastapi import APIRouter
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.pagination import PaginationParams
-from src.api.v1.errors import DBQueryHTTPError, PostNotFoundHTTPError
+from src.api.v1.errors import (
+    DBQueryHTTPError,
+    ForbiddenHTTPError,
+    PostNotFoundHTTPError,
+)
 from src.schemas.errors import ErrorResponseDTO
 from src.schemas.posts import (
     PostCreateDTO,
+    PostDeleteResponseDTO,
+    PostEditDTO,
     PostFeedResponseDTO,
     SinglePostResponseDTO,
 )
 from src.services.posts import PostsService
-from src.utils.exceptions import DBQueryError, PostNotFoundError
+from src.utils.exceptions import (
+    DBQueryError,
+    ForbiddenError,
+    PostNotFoundError,
+)
 
 router = APIRouter(
     prefix="/posts",
@@ -126,26 +136,59 @@ async def get_post(
     return SinglePostResponseDTO(data=post)
 
 
+@router.patch(
+    "/{post_id}",
+    responses={
+        400: {"model": ErrorResponseDTO},
+        401: {"model": ErrorResponseDTO},
+        403: {"model": ErrorResponseDTO},
+        404: {"model": ErrorResponseDTO},
+    },
+)
+async def edit_post(
+    post_id: int,
+    data: PostEditDTO,
+    sub: GetSubDep,
+    db: DatabaseDep,
+) -> SinglePostResponseDTO:
+    try:
+        post = await PostsService(db).edit_post(
+            user_id=sub,
+            post_id=post_id,
+            data=data,
+        )
+    except PostNotFoundError as exc:
+        raise PostNotFoundHTTPError from exc
+    except ForbiddenError as exc:
+        raise ForbiddenHTTPError from exc
+    except DBQueryError as exc:
+        raise DBQueryHTTPError from exc
+    return SinglePostResponseDTO(data=post)
+
+
 @router.delete(
     "/{post_id}",
     responses={
         400: {"model": ErrorResponseDTO},
         401: {"model": ErrorResponseDTO},
+        403: {"model": ErrorResponseDTO},
         404: {"model": ErrorResponseDTO},
     },
 )
-async def get_delete(
+async def delete_post(
     post_id: int,
     sub: GetSubDep,
     db: DatabaseDep,
-) -> SinglePostResponseDTO:
+) -> PostDeleteResponseDTO:
     try:
-        post = await PostsService(db).delete_post(
+        result = await PostsService(db).delete_post(
             post_id=post_id,
             user_id=sub,
         )
     except PostNotFoundError as exc:
         raise PostNotFoundHTTPError from exc
+    except ForbiddenError as exc:
+        raise ForbiddenHTTPError from exc
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
-    return SinglePostResponseDTO(data=post)
+    return PostDeleteResponseDTO(data=result)
