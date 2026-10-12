@@ -58,6 +58,21 @@ class CommentsService(BaseService):
         )
         return [CommentResponseDTO.model_validate(c) for c in comments]
 
+    async def get_comments_with_count(
+        self, post_id: int, limit: int, offset: int
+    ) -> tuple[list[CommentResponseDTO], int]:
+        post = await self.db.posts.get_one_or_none(id=post_id)
+        if post is None:
+            raise PostNotFoundError
+
+        comments = await self.db.comments.get_all_filtered(
+            post_id=post_id,
+            limit=limit,
+            offset=offset,
+        )
+        total_count = await self.db.comments.get_total()
+        return [CommentResponseDTO.model_validate(c) for c in comments], total_count
+
     async def get_comment(
         self,
         post_id: int,

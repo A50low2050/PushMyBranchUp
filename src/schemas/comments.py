@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+
 from pydantic import Field, field_validator
 from src.schemas.base import BaseDTO
 
@@ -36,6 +38,17 @@ class CommentResponseDTO(BaseDTO):
     content: str
     created_at: datetime
     updated_at: datetime
+
+
+class CommentFeedResponseDTO(BaseDTO):
+    page: int
+    per_page: int
+    total_pages: int
+    data: list[CommentResponseDTO]
+
+
+class SingleCommentResponseDTO(BaseDTO):
+    data: CommentResponseDTO
 
 
 class CommentEditDTO(BaseDTO):

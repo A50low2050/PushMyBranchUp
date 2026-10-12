@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import EmailStr, Field
 
@@ -41,6 +42,9 @@ UserGetMeResponseDTO = UserSingleResponseDTO
 
 
 class UserGetAllResponseDTO(BaseDTO):
+    page: int
+    per_page: int
+    total_pages: int
     data: list[UserResponseDTO]
 
 

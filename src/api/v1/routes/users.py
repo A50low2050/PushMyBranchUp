@@ -37,14 +37,24 @@ async def get_users(
     db: DatabaseDep,
 ) -> UserGetAllResponseDTO:
     try:
-        users = await UsersService(db).get_users(
+        users, total_count = await UsersService(db).get_users_with_count(
             limit=pagination.limit,
             offset=pagination.offset,
         )
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
 
-    return UserGetAllResponseDTO(data=users)
+    total_pages = (
+        (total_count + pagination.limit - 1) // pagination.limit
+        if total_count > 0
+        else 0
+    )
+    return UserGetAllResponseDTO(
+        data=users,
+        page=pagination.offset // pagination.limit + 1,
+        per_page=pagination.limit,
+        total_pages=total_pages,
+    )
 
 
 @router.get(

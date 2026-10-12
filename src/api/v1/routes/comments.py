@@ -14,6 +14,8 @@ from src.schemas.comments import (
     CommentDeleteDataDTO,
     CommentDeleteResponseDTO,
     CommentEditDTO,
+    CommentFeedResponseDTO,
+    SingleCommentResponseDTO,
     CommentResponseDTO,
 )
 from src.schemas.errors import ErrorResponseDTO
@@ -63,7 +65,7 @@ async def create_comment(
 
 @router.get(
     "/{post_id}/comments",
-    response_model=list[CommentResponseDTO],
+    response_model=CommentFeedResponseDTO,
     responses={
         400: {"model": ErrorResponseDTO},
         404: {"model": ErrorResponseDTO},
@@ -73,9 +75,9 @@ async def get_comments(
     post_id: int,
     pagination: PaginationParams,
     db: DatabaseDep,
-) -> list[CommentResponseDTO]:
+) -> CommentFeedResponseDTO:
     try:
-        comments = await CommentsService(db).get_comments(
+        comments, total_count = await CommentsService(db).get_comments_with_count(
             post_id=post_id,
             limit=pagination.limit,
             offset=pagination.offset,
@@ -84,7 +86,18 @@ async def get_comments(
         raise PostNotFoundHTTPError(str(exc)) from exc
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
-    return comments
+
+    total_pages = (
+        (total_count + pagination.limit - 1) // pagination.limit
+        if total_count > 0
+        else 0
+    )
+    return CommentFeedResponseDTO(
+        data=comments,
+        page=pagination.offset // pagination.limit + 1,
+        per_page=pagination.limit,
+        total_pages=total_pages,
+    )
 
 
 @router.get(

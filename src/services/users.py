@@ -156,3 +156,10 @@ class UsersService(BaseService):
     async def get_users(self, limit: int, offset: int) -> list[UserResponseDTO]:
         users = await self.db.users.get_all_filtered(limit=limit, offset=offset)
         return [UserResponseDTO.model_validate(user) for user in users]
+
+    async def get_users_with_count(
+        self, limit: int, offset: int
+    ) -> tuple[list[UserResponseDTO], int]:
+        users = await self.db.users.get_all_filtered(limit=limit, offset=offset)
+        total_count = await self.db.users.get_total()
+        return [UserResponseDTO.model_validate(user) for user in users], total_count
