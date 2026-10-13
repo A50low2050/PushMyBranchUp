@@ -68,22 +68,18 @@ class TestFollows:
         url = f"/v1/users/{target_id}/follow"
         headers = second_user_headers["headers"]
 
-        """1. Подписываемся через API"""
         follow = await client.put(url, headers=headers)
         assert follow.status_code == 200, follow.text
         assert follow.json()["followed"] is True
 
-        """2. Фид второго пользователя показывает посты первого"""
         feed = await client.get("/v1/posts/feed", headers=headers)
         assert feed.status_code == 200, feed.text
         assert len(feed.json()["data"]) == 5
 
-        """3. Отписываемся тем же запросом"""
         unfollow = await client.put(url, headers=headers)
         assert unfollow.status_code == 200, unfollow.text
         assert unfollow.json()["followed"] is False
 
-        """4. Фид снова пуст"""
         feed_after = await client.get("/v1/posts/feed", headers=headers)
         assert feed_after.status_code == 200, feed_after.text
         assert feed_after.json()["data"] == []
