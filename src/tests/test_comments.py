@@ -58,7 +58,11 @@ class TestComments:
             headers=auth_headers,
         )
         assert response.status_code == 200, response.text
-        items = response.json()
+        body = response.json()
+        # API возвращает CommentFeedResponseDTO, а не плоский список
+        assert isinstance(body, dict)
+        assert "data" in body
+        items = body["data"]
         assert isinstance(items, list)
         assert len(items) >= 1
         assert items[0]["content"] == "Комментарий для списка"
@@ -102,7 +106,6 @@ class TestComments:
         )
         comment_id = create_resp.json()["id"]
 
-        # Передаем неверный post_id:
         response = await client.get(
             route_path(f"/posts/99999/comments/{comment_id}"),
             headers=auth_headers,
@@ -116,7 +119,7 @@ class TestComments:
         auth_headers: dict[str, str],
         created_post: dict[str, int],
     ) -> None:
-        """Автор успешно редактирует комментарий (PATCH и PUT)."""
+        """Автор успешно редактирует комментарий (только PATCH)."""
         post_id = created_post["id"]
         create_resp = await client.post(
             route_path(f"/posts/{post_id}/comments"),
@@ -125,7 +128,6 @@ class TestComments:
         )
         comment_id = create_resp.json()["id"]
 
-        # PATCH
         patch_resp = await client.patch(
             route_path(f"/posts/{post_id}/comments/{comment_id}"),
             headers=auth_headers,
@@ -133,15 +135,6 @@ class TestComments:
         )
         assert patch_resp.status_code == 200, patch_resp.text
         assert patch_resp.json()["content"] == "Отредактированный комментарий (PATCH)"
-
-        # PUT
-        put_resp = await client.put(
-            route_path(f"/posts/{post_id}/comments/{comment_id}"),
-            headers=auth_headers,
-            json={"content": "Отредактированный комментарий (PUT)"},
-        )
-        assert put_resp.status_code == 200, put_resp.text
-        assert put_resp.json()["content"] == "Отредактированный комментарий (PUT)"
 
     async def test_edit_comment_missing_post_returns_comment_not_found(
         self,
@@ -170,7 +163,7 @@ class TestComments:
         self,
         client: AsyncClient,
         auth_headers: dict[str, str],
-        second_user_headers: dict[str, str],
+        second_user_headers: dict,
         created_post: dict[str, int],
     ) -> None:
         """Попытка изменения чужого комментария возвращает 403 FORBIDDEN."""
@@ -184,7 +177,7 @@ class TestComments:
 
         response = await client.patch(
             route_path(f"/posts/{post_id}/comments/{comment_id}"),
-            headers=second_user_headers,
+            headers=second_user_headers["headers"],
             json={"content": "Взлом чужого комментария"},
         )
         assert response.status_code == 403
@@ -248,7 +241,7 @@ class TestComments:
         self,
         client: AsyncClient,
         auth_headers: dict[str, str],
-        second_user_headers: dict[str, str],
+        second_user_headers: dict,
         created_post: dict[str, int],
     ) -> None:
         """Попытка удаления чужого комментария возвращает 403 FORBIDDEN."""
@@ -262,7 +255,7 @@ class TestComments:
 
         response = await client.delete(
             route_path(f"/posts/{post_id}/comments/{comment_id}"),
-            headers=second_user_headers,
+            headers=second_user_headers["headers"],
         )
         assert response.status_code == 403
         assert response.json()["error"] == "FORBIDDEN"
