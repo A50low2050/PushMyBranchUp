@@ -169,6 +169,7 @@ async def created_post(registered_user):
 
     return {"id": post.id, "user_id": post.user_id}
 
+
 @pytest_asyncio.fixture
 async def multiple_posts(client, auth_headers):
     """Создаёт 5 постов через API для тестов пагинации."""
