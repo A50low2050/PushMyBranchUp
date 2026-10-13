@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import BadRequestHTTPError, UserNotFoundHTTPError
 from src.schemas.errors import ErrorResponseDTO
 from src.schemas.follows import FollowResponseDTO
@@ -27,11 +28,15 @@ async def toggle_follow(
     user_id: int,
     sub: GetSubDep,
     db: DatabaseDep,
+    notifications: NotificationsDep,
+    background_tasks: BackgroundTasks,
 ) -> FollowResponseDTO:
     try:
         result = await FollowsService(db).toggle_follow(
             followed_id=user_id,
             follower_id=sub,
+            notifications=notifications,
+            background_tasks=background_tasks,
         )
     except UserNotFoundError as exc:
         raise UserNotFoundHTTPError from exc

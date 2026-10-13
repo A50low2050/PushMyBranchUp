@@ -1,10 +1,16 @@
+from typing import cast
+
+from fastapi import BackgroundTasks
+
 from src.schemas.follows import FollowResponseDTO, SubscriptionAddDTO
+from src.schemas.users import UserDTO
 from src.services.base import BaseService
 from src.utils.exceptions import (
     ObjectAlreadyExistsError,
     SelfFollowError,
     UserNotFoundError,
 )
+from src.utils.notiserv import EmailMessage, NotificationService
 
 
 class FollowsService(BaseService):
@@ -12,11 +18,13 @@ class FollowsService(BaseService):
         self,
         followed_id: int,
         follower_id: int,
+        notifications: NotificationService,
+        background_tasks: BackgroundTasks,
     ) -> FollowResponseDTO:
         if followed_id == follower_id:
             raise SelfFollowError
 
-        user = await self.db.users.get_one_or_none(id=followed_id)
+        user = cast(UserDTO | None, await self.db.users.get_one_or_none(id=followed_id))
         if user is None:
             raise UserNotFoundError
 
@@ -46,8 +54,23 @@ class FollowsService(BaseService):
 
         await self.db.commit()
 
-        return FollowResponseDTO(
+        follow_resp = FollowResponseDTO(
             follower_id=follower_id,
             followed_id=followed_id,
             followed=followed,
         )
+
+        if not follow_resp.followed:
+            return follow_resp
+
+        await notifications.notify(
+            [
+                EmailMessage(
+                    recipient_email=user.email,
+                    subject="Новый подписчик",
+                    body="На вас подписался новый пользователь.",
+                )
+            ]
+        )
+
+        return follow_resp

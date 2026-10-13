@@ -2,7 +2,6 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
-import aiosmtplib
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -14,7 +13,7 @@ from src.db.manager import DBManager
 from src.utils.cacheserv import InMemoryAsyncCacheService
 from src.utils.exceptions import SMTPConnectionError
 from src.utils.logserv import LogService
-from src.utils.notiserv import EmailMessage
+from src.utils.notiserv import NotificationService, SMTPProvider
 
 logger = LogService.get_logger(__name__)
 
@@ -38,20 +37,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     app.state.cache = cacheserv
 
     logger.info("Проверка подключения к SMTP-серверу...")
-    client = aiosmtplib.SMTP(
-        hostname=settings.notifications.email.host,
-        port=settings.notifications.email.port,
-        use_tls=settings.notifications.email.use_tls,
-        start_tls=settings.notifications.email.start_tls,
-        timeout=settings.notifications.email.timeout_seconds,
-    )
+    smtp_provider = SMTPProvider()
 
-    smtp_is_available = await EmailMessage.ping(client)
+    smtp_is_available = await smtp_provider.ping()
     if not smtp_is_available:
         raise SMTPConnectionError
 
     logger.info("Успешно подключено к SMTP-серверу...")
-    app.state.smtp = client
+    app.state.notifications = NotificationService(providers={"email": smtp_provider})
 
     yield
     logger.info("Приложение останавливается...")

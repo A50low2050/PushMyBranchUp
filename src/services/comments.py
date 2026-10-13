@@ -1,5 +1,7 @@
 from typing import cast
 
+from fastapi import BackgroundTasks
+
 from src.schemas.comments import (
     CommentAddDTO,
     CommentCreateDTO,
@@ -7,6 +9,8 @@ from src.schemas.comments import (
     CommentEditDTO,
     CommentResponseDTO,
 )
+from src.schemas.posts import PostDTO
+from src.schemas.users import UserDTO
 from src.services.base import BaseService
 from src.utils.exceptions import (
     CommentNotFoundError,
@@ -14,6 +18,7 @@ from src.utils.exceptions import (
     ObjectNotFoundError,
     PostNotFoundError,
 )
+from src.utils.notiserv import EmailMessage, NotificationService
 
 
 class CommentsService(BaseService):
@@ -22,8 +27,10 @@ class CommentsService(BaseService):
         post_id: int,
         user_id: int,
         data: CommentCreateDTO,
+        notifications: NotificationService,
+        background_tasks: BackgroundTasks,
     ) -> CommentResponseDTO:
-        post = await self.db.posts.get_one_or_none(id=post_id)
+        post = cast(PostDTO | None, await self.db.posts.get_one_or_none(id=post_id))
         if post is None:
             raise PostNotFoundError
 
@@ -35,7 +42,7 @@ class CommentsService(BaseService):
         result = cast(CommentDTO, await self.db.comments.add(comment_data))
         await self.db.commit()
 
-        return CommentResponseDTO(
+        comment_resp = CommentResponseDTO(
             id=result.id,
             post_id=result.post_id,
             user_id=result.user_id,
@@ -43,6 +50,24 @@ class CommentsService(BaseService):
             created_at=result.created_at,
             updated_at=result.updated_at,
         )
+
+        author = cast(
+            UserDTO | None,
+            await self.db.users.get_one_or_none(id=post.user_id),
+        )
+        if author is not None and author.id != user_id:
+            background_tasks.add_task(
+                notifications.notify,
+                [
+                    EmailMessage(
+                        recipient_email=author.email,
+                        subject="Новый комментарий на вашем посте",
+                        body=f"На ваш пост #{post_id} оставили комментарий.",
+                    )
+                ]
+            )
+
+        return comment_resp
 
     async def get_comments(
         self, post_id: int, limit: int, offset: int
