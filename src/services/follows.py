@@ -63,14 +63,15 @@ class FollowsService(BaseService):
         if not follow_resp.followed:
             return follow_resp
 
-        await notifications.notify(
+        background_tasks.add_task(
+            notifications.notify,
             [
                 EmailMessage(
                     recipient_email=user.email,
                     subject="Новый подписчик",
                     body="На вас подписался новый пользователь.",
                 )
-            ]
+            ],
         )
 
         return follow_resp

@@ -35,7 +35,7 @@ class PostsService(BaseService):
         result = cast(PostDTO, await self.db.posts.add(post))
         await self.db.commit()
 
-        post = PostResponseDTO(
+        post_resp = PostResponseDTO(
             post_id=result.id,
             user_id=result.user_id,
             content=result.content,
@@ -50,7 +50,7 @@ class PostsService(BaseService):
             followed_id=user_id
         )
         if not follower_emails:
-            return post
+            return post_resp
 
         background_tasks.add_task(
             notifications.notify,
@@ -60,14 +60,14 @@ class PostsService(BaseService):
                     subject="Новая публикация",
                     body=(
                         "Пользователь, на которого вы подписаны, "
-                        f"опубликовал новый пост #{post.post_id}."
+                        f"опубликовал новый пост #{post_resp.post_id}."
                     ),
                 )
                 for email in follower_emails
             ],
         )
 
-        return post
+        return post_resp
 
     async def get_posts(
         self,

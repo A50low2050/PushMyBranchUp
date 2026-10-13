@@ -64,7 +64,7 @@ class CommentsService(BaseService):
                         subject="Новый комментарий на вашем посте",
                         body=f"На ваш пост #{post_id} оставили комментарий.",
                     )
-                ]
+                ],
             )
 
         return comment_resp

@@ -57,7 +57,7 @@ async def create_comment(
             user_id=sub,
             data=data,
             notifications=notifications,
-            background_tasks=background_tasks
+            background_tasks=background_tasks,
         )
     except PostNotFoundError as exc:
         raise PostNotFoundHTTPError from exc

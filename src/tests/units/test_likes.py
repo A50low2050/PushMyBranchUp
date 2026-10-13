@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -9,6 +10,7 @@ from src.models.posts import PostORM
 from src.models.users import UserORM
 from src.services.likes import LikesService
 from src.utils.exceptions import PostNotFoundError
+from src.utils.notiserv import NotificationService
 
 # in-memory SQLite для тестов (aiosqlite)
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
@@ -34,7 +36,10 @@ async def _prepare_db() -> DBManager:
     return db
 
 
-def test_toggle_like_sets_and_removes_like() -> None:
+def test_toggle_like_sets_and_removes_like(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Первый вызов ставит лайк, второй — убирает (toggle)."""
 
     async def run() -> None:
@@ -42,7 +47,12 @@ def test_toggle_like_sets_and_removes_like() -> None:
         service = LikesService(db)
 
         # лайка нет -> ставим
-        result = await service.toggle_like(post_id=1, user_id=1)
+        result = await service.toggle_like(
+            post_id=1,
+            user_id=1,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
         assert result.is_liked is True
         assert result.post_id == 1
         assert result.user_id == 1
@@ -51,7 +61,12 @@ def test_toggle_like_sets_and_removes_like() -> None:
         assert like is not None
 
         # лайк есть -> убираем
-        result = await service.toggle_like(post_id=1, user_id=1)
+        result = await service.toggle_like(
+            post_id=1,
+            user_id=1,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
         assert result.is_liked is False
 
         like = await db.likes.get_one_or_none(user_id=1, post_id=1)
@@ -62,7 +77,10 @@ def test_toggle_like_sets_and_removes_like() -> None:
     asyncio.run(run())
 
 
-def test_toggle_like_raises_for_missing_post() -> None:
+def test_toggle_like_raises_for_missing_post(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Лайк несуществующего поста -> PostNotFoundError."""
 
     async def run() -> None:
@@ -70,14 +88,22 @@ def test_toggle_like_raises_for_missing_post() -> None:
         service = LikesService(db)
 
         with pytest.raises(PostNotFoundError):
-            await service.toggle_like(post_id=999, user_id=1)
+            await service.toggle_like(
+                post_id=999,
+                user_id=1,
+                notifications=fake_notifications,
+                background_tasks=fake_background_tasks,
+            )
 
         await db.__aexit__(None, None, None)
 
     asyncio.run(run())
 
 
-def test_toggle_like_isolated_between_users() -> None:
+def test_toggle_like_isolated_between_users(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Лайк одного пользователя не мешает лайку другого."""
 
     async def run() -> None:
@@ -90,8 +116,18 @@ def test_toggle_like_isolated_between_users() -> None:
         await db.session.flush()
         service = LikesService(db)
 
-        r1 = await service.toggle_like(post_id=1, user_id=1)
-        r2 = await service.toggle_like(post_id=1, user_id=2)
+        r1 = await service.toggle_like(
+            post_id=1,
+            user_id=1,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
+        r2 = await service.toggle_like(
+            post_id=1,
+            user_id=2,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         assert r1.is_liked is True
         assert r2.is_liked is True

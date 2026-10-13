@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import Field, field_validator
+
 from src.schemas.base import BaseDTO
 
 
