@@ -78,29 +78,21 @@ POST_ID_EXAMPLES = {
 CREATE_EXAMPLES = {
     "valid": {
         "summary": "Обычный пост",
-        "value": {
-            "content": "Сегодня начал работать над новым проектом!"
-        },
+        "value": {"content": "Сегодня начал работать над новым проектом!"},
     },
     "short": {
         "summary": "Короткий пост",
-        "value": {
-            "content": "Привет!"
-        },
+        "value": {"content": "Привет!"},
     },
     "empty": {
         "summary": "Ошибка: пустой текст",
         "description": "Вызовет ошибку валидации 422.",
-        "value": {
-            "content": ""
-        },
+        "value": {"content": ""},
     },
     "spaces": {
         "summary": "Ошибка: только пробелы",
         "description": "Вызовет ошибку валидации 422.",
-        "value": {
-            "content": "   "
-        },
+        "value": {"content": "   "},
     },
     "missing": {
         "summary": "Ошибка: отсутствует content",
@@ -112,21 +104,15 @@ CREATE_EXAMPLES = {
 EDIT_EXAMPLES = {
     "valid": {
         "summary": "Изменить текст",
-        "value": {
-            "content": "Обновлённый текст поста."
-        },
+        "value": {"content": "Обновлённый текст поста."},
     },
     "empty": {
         "summary": "Ошибка: пустой текст",
-        "value": {
-            "content": ""
-        },
+        "value": {"content": ""},
     },
     "spaces": {
         "summary": "Ошибка: только пробелы",
-        "value": {
-            "content": "   "
-        },
+        "value": {"content": "   "},
     },
 }
 
@@ -193,11 +179,7 @@ VALIDATION_RESPONSE = error_response(
     responses={
         200: {
             "description": "Пост создан",
-            "content": {
-                "application/json": {
-                    "example": SINGLE_POST_EXAMPLE
-                }
-            },
+            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
         },
         400: BAD_REQUEST_RESPONSE,
         401: UNAUTHORIZED_RESPONSE,
@@ -277,11 +259,7 @@ async def get_posts(
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
 
-    total_pages = (
-        (total + pagination.limit - 1) // pagination.limit
-        if total > 0
-        else 0
-    )
+    total_pages = (total + pagination.limit - 1) // pagination.limit if total > 0 else 0
 
     return PostFeedResponseDTO(
         data=posts,
@@ -340,11 +318,7 @@ async def get_posts_feed(
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
 
-    total_pages = (
-        (total + pagination.limit - 1) // pagination.limit
-        if total > 0
-        else 0
-    )
+    total_pages = (total + pagination.limit - 1) // pagination.limit if total > 0 else 0
 
     return PostFeedResponseDTO(
         data=posts,
@@ -358,17 +332,12 @@ async def get_posts_feed(
     "/{post_id}",
     summary="Получить пост",
     description=(
-        "Возвращает пост по его ID, включая количество лайков "
-        "и комментариев."
+        "Возвращает пост по его ID, включая количество лайков " "и комментариев."
     ),
     responses={
         200: {
             "description": "Пост найден",
-            "content": {
-                "application/json": {
-                    "example": SINGLE_POST_EXAMPLE
-                }
-            },
+            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
         },
         400: BAD_REQUEST_RESPONSE,
         401: UNAUTHORIZED_RESPONSE,
@@ -473,11 +442,7 @@ async def edit_post(
     responses={
         200: {
             "description": "Пост удалён",
-            "content": {
-                "application/json": {
-                    "example": DELETE_EXAMPLE
-                }
-            },
+            "content": {"application/json": {"example": DELETE_EXAMPLE}},
         },
         400: BAD_REQUEST_RESPONSE,
         401: UNAUTHORIZED_RESPONSE,

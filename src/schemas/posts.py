@@ -34,7 +34,7 @@ class PostEditDTO(BaseDTO):
         description="Текст поста. От 1 до 2200 символов, не может состоять только из пробелов.",
         examples=["Сегодня начал работать над новым проектом!"],
     )
-    
+
     @field_validator("content")
     @classmethod
     def validate_text(cls, value: str) -> str:
