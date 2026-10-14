@@ -169,7 +169,7 @@ class TestPagination:
         assert response.status_code == 200, response.text
 
         body = response.json()
-        assert body["page"] == 2  # offset 2 / limit 2 + 1
+        assert body["page"] == 2 
         assert len(body["data"]) == 2
 
     async def test_pages_do_not_overlap(self, client, auth_headers, multiple_posts):
