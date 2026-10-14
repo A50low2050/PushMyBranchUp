@@ -1,4 +1,3 @@
-# flake8: noqa
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
@@ -6,11 +5,19 @@ from typing import Any
 
 TEST_DB_FILE = "./test_db.sqlite3"
 
+
 os.environ.setdefault("ENV_AUTH__SECRET_KEY", "test-secret-key-for-pytest-only-12345")
 os.environ.setdefault("ENV_UVICORN__HOST", "127.0.0.1")
 os.environ.setdefault("ENV_UVICORN__PORT", "8000")
 os.environ.setdefault("ENV_UVICORN__RELOAD", "false")
 os.environ.setdefault("ENV_DATABASE__URL", f"sqlite+aiosqlite:///./{TEST_DB_FILE}")
+os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__HOST", "smtp.test.local")
+os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PORT", "587")
+os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__USER", "test@test.local")
+os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PASSWORD", "test-password-12345")
+os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL", "noreply@test.local")
+
+
 
 import pytest
 import pytest_asyncio
@@ -29,6 +36,8 @@ from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
 from src.models.base import BaseORM
 from src.utils.cacheserv import InMemoryAsyncCacheService
+from unittest.mock import MagicMock
+
 
 # Регистрируем все таблицы в metadata
 from src.models import (  # noqa: F401
@@ -85,13 +94,17 @@ async def _clean_tables():
 
 @pytest_asyncio.fixture
 async def client():
-    """httpx-клиент поверх app с подменой БД и кеша."""
+    """httpx-клиент поверх app с подменой БД, кеша и уведомлений."""
 
     async def _override_get_db():
         async with DBManager(async_test_sessionmaker) as db:
             yield db
 
     cache_instance = InMemoryAsyncCacheService()
+
+    notifications_mock = MagicMock()
+    notifications_mock.send = MagicMock(return_value=None)
+    notifications_mock.send_email = MagicMock(return_value=None)
 
     async def _override_cache():
         return cache_instance
@@ -100,6 +113,7 @@ async def client():
     app.dependency_overrides[get_cache] = _override_cache
 
     app.state.cache = cache_instance
+    app.state.notifications = notifications_mock
 
     async with AsyncClient(
         transport=ASGITransport(app=app),
@@ -107,8 +121,10 @@ async def client():
     ) as ac:
         yield ac
 
+    # Cleanup
     app.dependency_overrides.clear()
     del app.state.cache
+    del app.state.notifications
 
 
 @pytest.fixture
