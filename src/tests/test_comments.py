@@ -207,7 +207,6 @@ class TestComments:
         assert "data" in data
         assert data["data"]["deleted_count"] == 1
 
-        # Проверяем, что комментария больше нет
         get_resp = await client.get(
             route_path(f"/posts/{post_id}/comments/{comment_id}"),
             headers=auth_headers,
