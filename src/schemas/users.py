@@ -51,7 +51,9 @@ class UserResponseDTO(BaseDTO):
     username: str = Field(description="Имя пользователя")
     email: EmailStr = Field(description="Электронная почта пользователя")
     created_at: datetime = Field(description="Дата и время регистрации")
-    updated_at: datetime = Field(description="Дата и время последнего изменения профиля")
+    updated_at: datetime = Field(
+        description="Дата и время последнего изменения профиля"
+    )
 
 
 class UserSingleResponseDTO(BaseDTO):

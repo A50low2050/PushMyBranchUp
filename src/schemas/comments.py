@@ -27,7 +27,9 @@ class CommentDTO(BaseDTO):
     post_id: int = Field(description="ID поста, к которому относится комментарий")
     content: str = Field(description="Текст комментария")
     created_at: datetime = Field(description="Дата и время создания комментария")
-    updated_at: datetime = Field(description="Дата и время последнего изменения комментария")
+    updated_at: datetime = Field(
+        description="Дата и время последнего изменения комментария"
+    )
 
 
 class CommentAddDTO(BaseDTO):
@@ -45,7 +47,9 @@ class CommentResponseDTO(BaseDTO):
     user_id: int = Field(description="ID автора комментария")
     content: str = Field(description="Текст комментария")
     created_at: datetime = Field(description="Дата и время создания комментария")
-    updated_at: datetime = Field(description="Дата и время последнего изменения комментария")
+    updated_at: datetime = Field(
+        description="Дата и время последнего изменения комментария"
+    )
 
 
 class CommentFeedResponseDTO(BaseDTO):
@@ -58,9 +62,7 @@ class CommentFeedResponseDTO(BaseDTO):
 
 
 class SingleCommentResponseDTO(BaseDTO):
-    data: CommentResponseDTO = Field(
-        description="Данные одного комментария"
-    )
+    data: CommentResponseDTO = Field(description="Данные одного комментария")
 
 
 class CommentEditDTO(BaseDTO):
@@ -80,9 +82,7 @@ class CommentEditDTO(BaseDTO):
 
 
 class CommentDeleteDataDTO(BaseDTO):
-    deleted_count: int = Field(
-        description="Количество удалённых комментариев"
-    )
+    deleted_count: int = Field(description="Количество удалённых комментариев")
 
 
 class CommentDeleteResponseDTO(BaseDTO):
