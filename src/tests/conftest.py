@@ -169,6 +169,7 @@ async def created_post(registered_user):
 
     return {"id": post.id, "user_id": post.user_id}
 
+
 @pytest_asyncio.fixture
 async def multiple_posts(client, auth_headers):
     """Создаёт 5 постов через API для тестов пагинации."""
@@ -195,7 +196,9 @@ def second_payload() -> dict:
 
 
 @pytest_asyncio.fixture
-async def second_user_headers(client, second_payload) -> dict:
+async def second_user_headers(
+    client: AsyncClient, second_payload: dict[str, str]
+) -> dict[str, Any]:
     """Регистрирует второго пользователя и возвращает его заголовки и id."""
     reg = await client.post(route_path("/auth/register"), json=second_payload)
     assert reg.status_code == 200, reg.text

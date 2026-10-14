@@ -14,7 +14,9 @@ from src.config import settings
 from src.db.connection import sessionmaker
 from src.db.manager import DBManager
 from src.utils.cacheserv import InMemoryAsyncCacheService
+from src.utils.exceptions import SMTPConnectionError
 from src.utils.logserv import LogService
+from src.utils.notiserv import NotificationService, SMTPProvider
 
 logger = LogService.get_logger(__name__)
 
@@ -36,6 +38,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     await cacheserv.ping()
     logger.info("Подключение к кэшу успешно установлено!")
     app.state.cache = cacheserv
+
+    logger.info("Проверка подключения к SMTP-серверу...")
+    smtp_provider = SMTPProvider()
+
+    smtp_is_available = await smtp_provider.ping()
+    if not smtp_is_available:
+        raise SMTPConnectionError
+
+    logger.info("Успешно подключено к SMTP-серверу...")
+    app.state.notifications = NotificationService(providers={"email": smtp_provider})
 
     yield
 

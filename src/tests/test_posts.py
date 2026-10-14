@@ -10,9 +10,7 @@ class TestPosts:
 
     async def test_create_post_success(self, client, auth_headers, registered_user):
         """Успешное создание поста возвращает 200 и данные поста."""
-        payload = {
-            "content": "Это тестовый пост с валидным содержимым."
-        }
+        payload = {"content": "Это тестовый пост с валидным содержимым."}
 
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
@@ -51,6 +49,7 @@ class TestPosts:
         response = await client.post("/v1/posts", json=payload)
 
         assert response.status_code == 401
+
 
 class TestPagination:
     """Сценарии пагинации списка постов."""
@@ -97,17 +96,21 @@ class TestPagination:
 
         assert len(ids_page1) == 3
         assert len(ids_page2) == 2
-        assert ids_page1.isdisjoint(ids_page2)  
-        assert ids_page1 | ids_page2 == all_ids 
+        assert ids_page1.isdisjoint(ids_page2)
+        assert ids_page1 | ids_page2 == all_ids
 
-    async def test_pagination_offset_beyond_total(self, client, auth_headers, multiple_posts):
+    async def test_pagination_offset_beyond_total(
+        self, client, auth_headers, multiple_posts
+    ):
         """offset больше количества постов возвращает пустой список."""
-        response = await client.get("/v1/posts?limit=2&offset=100", headers=auth_headers)
+        response = await client.get(
+            "/v1/posts?limit=2&offset=100", headers=auth_headers
+        )
         assert response.status_code == 200, response.text
 
         body = response.json()
         assert body["data"] == []
-        assert body["total_pages"] == 3  
+        assert body["total_pages"] == 3
 
     async def test_pagination_unauthorized(self, client):
         """GET /v1/posts без токена возвращает 401."""

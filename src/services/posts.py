@@ -1,5 +1,7 @@
 from typing import cast
 
+from fastapi import BackgroundTasks
+
 from src.schemas.posts import (
     PostAddDTO,
     PostCreateDTO,
@@ -14,6 +16,7 @@ from src.utils.exceptions import (
     ObjectNotFoundError,
     PostNotFoundError,
 )
+from src.utils.notiserv import EmailMessage, NotificationService
 
 
 class PostsService(BaseService):
@@ -21,6 +24,8 @@ class PostsService(BaseService):
         self,
         data: PostCreateDTO,
         user_id: int,
+        notifications: NotificationService,
+        background_tasks: BackgroundTasks,
     ) -> PostResponseDTO:
         post = PostAddDTO(
             user_id=user_id,
@@ -30,7 +35,7 @@ class PostsService(BaseService):
         result = cast(PostDTO, await self.db.posts.add(post))
         await self.db.commit()
 
-        return PostResponseDTO(
+        post_resp = PostResponseDTO(
             post_id=result.id,
             user_id=result.user_id,
             content=result.content,
@@ -40,6 +45,29 @@ class PostsService(BaseService):
             comments_count=0,
             is_liked=False,
         )
+
+        follower_emails = await self.db.subscriptions.get_follower_emails(
+            followed_id=user_id
+        )
+        if not follower_emails:
+            return post_resp
+
+        background_tasks.add_task(
+            notifications.notify,
+            [
+                EmailMessage(
+                    recipient_email=email,
+                    subject="Новая публикация",
+                    body=(
+                        "Пользователь, на которого вы подписаны, "
+                        f"опубликовал новый пост #{post_resp.post_id}."
+                    ),
+                )
+                for email in follower_emails
+            ],
+        )
+
+        return post_resp
 
     async def get_posts(
         self,

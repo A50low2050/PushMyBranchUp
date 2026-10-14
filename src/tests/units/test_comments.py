@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -14,6 +15,7 @@ from src.utils.exceptions import (
     ForbiddenError,
     PostNotFoundError,
 )
+from src.utils.notiserv import NotificationService
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -37,7 +39,10 @@ async def _prepare_db() -> DBManager:
     return db
 
 
-def test_create_comment_success() -> None:
+def test_create_comment_success(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Успешное создание комментария в БД."""
 
     async def run() -> None:
@@ -45,7 +50,13 @@ def test_create_comment_success() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Отличный пост!")
-        result = await service.create_comment(post_id=1, user_id=1, data=dto)
+        result = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         assert result.id is not None
         assert result.post_id == 1
@@ -61,7 +72,10 @@ def test_create_comment_success() -> None:
     asyncio.run(run())
 
 
-def test_create_comment_raises_for_missing_post() -> None:
+def test_create_comment_raises_for_missing_post(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Создание комментария к несуществующему посту -> PostNotFoundError."""
 
     async def run() -> None:
@@ -70,14 +84,23 @@ def test_create_comment_raises_for_missing_post() -> None:
 
         dto = CommentCreateDTO(content="Комментарий к пустоте")
         with pytest.raises(PostNotFoundError):
-            await service.create_comment(post_id=999, user_id=1, data=dto)
+            await service.create_comment(
+                post_id=999,
+                user_id=1,
+                data=dto,
+                notifications=fake_notifications,
+                background_tasks=fake_background_tasks,
+            )
 
         await db.__aexit__(None, None, None)
 
     asyncio.run(run())
 
 
-def test_get_comment_success() -> None:
+def test_get_comment_success(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Успешное получение комментария по post_id и comment_id."""
 
     async def run() -> None:
@@ -85,7 +108,13 @@ def test_get_comment_success() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Комментарий 1")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         fetched = await service.get_comment(post_id=1, comment_id=created.id)
         assert fetched.id == created.id
@@ -96,7 +125,10 @@ def test_get_comment_success() -> None:
     asyncio.run(run())
 
 
-def test_get_comment_raises_comment_not_found_for_missing_post() -> None:
+def test_get_comment_raises_comment_not_found_for_missing_post(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Если пост или комментарий отсутствует, возвращается CommentNotFoundError."""
 
     async def run() -> None:
@@ -104,7 +136,13 @@ def test_get_comment_raises_comment_not_found_for_missing_post() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Комментарий 1")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         # Несуществующий post_id -> CommentNotFoundError
         with pytest.raises(CommentNotFoundError):
@@ -119,7 +157,10 @@ def test_get_comment_raises_comment_not_found_for_missing_post() -> None:
     asyncio.run(run())
 
 
-def test_update_comment_success() -> None:
+def test_update_comment_success(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Успешное изменение комментария автором."""
 
     async def run() -> None:
@@ -127,7 +168,13 @@ def test_update_comment_success() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Старый текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         edit_dto = CommentEditDTO(content="Обновленный текст")
         updated = await service.update_comment(
@@ -144,7 +191,10 @@ def test_update_comment_success() -> None:
     asyncio.run(run())
 
 
-def test_update_comment_raises_comment_not_found_for_missing_post() -> None:
+def test_update_comment_raises_comment_not_found_for_missing_post(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """При неверном post_id возвращается CommentNotFoundError (один запрос к БД)."""
 
     async def run() -> None:
@@ -152,7 +202,13 @@ def test_update_comment_raises_comment_not_found_for_missing_post() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         edit_dto = CommentEditDTO(content="Новый текст")
         with pytest.raises(CommentNotFoundError):
@@ -168,7 +224,10 @@ def test_update_comment_raises_comment_not_found_for_missing_post() -> None:
     asyncio.run(run())
 
 
-def test_update_comment_forbidden_for_non_author() -> None:
+def test_update_comment_forbidden_for_non_author(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Попытка изменения комментария чужим пользователем вызывает ForbiddenError."""
 
     async def run() -> None:
@@ -176,7 +235,13 @@ def test_update_comment_forbidden_for_non_author() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         edit_dto = CommentEditDTO(content="Попытка взлома")
         with pytest.raises(ForbiddenError):
@@ -192,7 +257,10 @@ def test_update_comment_forbidden_for_non_author() -> None:
     asyncio.run(run())
 
 
-def test_delete_comment_success() -> None:
+def test_delete_comment_success(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Успешное удаление комментария автором."""
 
     async def run() -> None:
@@ -200,7 +268,13 @@ def test_delete_comment_success() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Удаляемый текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         deleted_count = await service.delete_comment(
             comment_id=created.id,
@@ -217,7 +291,10 @@ def test_delete_comment_success() -> None:
     asyncio.run(run())
 
 
-def test_delete_comment_raises_comment_not_found_for_missing_post() -> None:
+def test_delete_comment_raises_comment_not_found_for_missing_post(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """При неверном post_id удаление вызывает CommentNotFoundError."""
 
     async def run() -> None:
@@ -225,7 +302,13 @@ def test_delete_comment_raises_comment_not_found_for_missing_post() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         with pytest.raises(CommentNotFoundError):
             await service.delete_comment(
@@ -239,7 +322,10 @@ def test_delete_comment_raises_comment_not_found_for_missing_post() -> None:
     asyncio.run(run())
 
 
-def test_delete_comment_forbidden_for_non_author() -> None:
+def test_delete_comment_forbidden_for_non_author(
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+) -> None:
     """Попытка удаления комментария чужим пользователем вызывает ForbiddenError."""
 
     async def run() -> None:
@@ -247,7 +333,13 @@ def test_delete_comment_forbidden_for_non_author() -> None:
         service = CommentsService(db)
 
         dto = CommentCreateDTO(content="Текст")
-        created = await service.create_comment(post_id=1, user_id=1, data=dto)
+        created = await service.create_comment(
+            post_id=1,
+            user_id=1,
+            data=dto,
+            notifications=fake_notifications,
+            background_tasks=fake_background_tasks,
+        )
 
         with pytest.raises(ForbiddenError):
             await service.delete_comment(

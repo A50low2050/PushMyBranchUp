@@ -1,9 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path
+from fastapi import APIRouter, Body, Path, BackgroundTasks
+
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
 from src.api.v1.errors import (
     DBQueryHTTPError,
@@ -209,11 +211,15 @@ async def create_post(
     ],
     user_id: GetSubDep,
     db: DatabaseDep,
+    notifications: NotificationsDep,
+    background_tasks: BackgroundTasks,
 ) -> SinglePostResponseDTO:
     try:
         post = await PostsService(db).create_post(
             data=data,
             user_id=user_id,
+            notifications=notifications,
+            background_tasks=background_tasks,
         )
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc

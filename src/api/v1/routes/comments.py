@@ -1,7 +1,8 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, BackgroundTasks, status
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
 from src.api.v1.errors import (
     CommentNotFoundHTTPError,
@@ -15,7 +16,6 @@ from src.schemas.comments import (
     CommentDeleteResponseDTO,
     CommentEditDTO,
     CommentFeedResponseDTO,
-    SingleCommentResponseDTO,
     CommentResponseDTO,
 )
 from src.schemas.errors import ErrorResponseDTO
@@ -94,12 +94,16 @@ async def create_comment(
     data: CommentCreateDTO,
     sub: GetSubDep,
     db: DatabaseDep,
+    notifications: NotificationsDep,
+    background_tasks: BackgroundTasks,
 ) -> CommentResponseDTO:
     try:
         result = await CommentsService(db).create_comment(
             post_id=post_id,
             user_id=sub,
             data=data,
+            notifications=notifications,
+            background_tasks=background_tasks,
         )
     except PostNotFoundError as exc:
         raise PostNotFoundHTTPError from exc

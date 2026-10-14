@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
+from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import DBQueryHTTPError, PostNotFoundHTTPError
 from src.schemas.errors import ErrorResponseDTO
 from src.schemas.likes import LikeResponseDTO
@@ -90,11 +91,15 @@ async def toggle_like(
     post_id: int,
     sub: GetSubDep,
     db: DatabaseDep,
+    notifications: NotificationsDep,
+    background_tasks: BackgroundTasks,
 ) -> LikeResponseDTO:
     try:
         result = await LikesService(db).toggle_like(
             post_id=post_id,
             user_id=sub,
+            notifications=notifications,
+            background_tasks=background_tasks,
         )
     except PostNotFoundError as exc:
         raise PostNotFoundHTTPError from exc

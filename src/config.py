@@ -44,12 +44,28 @@ class AuthSettings(BaseModel):
     access_token_blacklist_prefix: str = "blacklist:"
 
 
+class SMTPEmailNotificationsSettings(BaseModel):
+    host: str
+    port: int
+    user: str
+    password: SecretStr
+    from_email: str
+    use_tls: bool = True
+    start_tls: bool = False
+    timeout_seconds: float = 5.0
+
+
+class NotificationsSettings(BaseModel):
+    email: SMTPEmailNotificationsSettings
+
+
 class Settings(BaseSettings):
     """настройки приложения"""
 
     uvicorn: UvicornSettings
     database: DBSettings
     auth: AuthSettings
+    notifications: NotificationsSettings
     fastapi: FastAPISettings = FastAPISettings()
 
     model_config = SettingsConfigDict(
