@@ -196,6 +196,7 @@ def add_error_examples(openapi_schema: dict[str, Any]) -> None:
 # OpenAPI и описание авторизации
 # ---------------------------------------------------------
 
+
 def custom_openapi() -> dict[str, Any]:
     if app.openapi_schema is not None:
         return app.openapi_schema
@@ -207,11 +208,7 @@ def custom_openapi() -> dict[str, Any]:
         routes=app.routes,
     )
 
-    security_schemes = (
-        openapi_schema
-        .get("components", {})
-        .get("securitySchemes", {})
-    )
+    security_schemes = openapi_schema.get("components", {}).get("securitySchemes", {})
 
     if "HTTPBearer" in security_schemes:
         security_schemes["HTTPBearer"]["description"] = (
@@ -229,12 +226,13 @@ def custom_openapi() -> dict[str, Any]:
     return app.openapi_schema
 
 
-app.openapi = custom_openapi
+app.openapi = custom_openapi  # type: ignore
 
 
 # ---------------------------------------------------------
 # Swagger UI
 # ---------------------------------------------------------
+
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui() -> HTMLResponse:
@@ -247,7 +245,7 @@ async def custom_swagger_ui() -> HTMLResponse:
         },
     )
 
-    html = response.body.decode("utf-8")
+    html = response.body.decode("utf-8")  # type: ignore
 
     custom_styles = """
     <style>
@@ -377,6 +375,7 @@ async def custom_swagger_ui() -> HTMLResponse:
 # ---------------------------------------------------------
 # Обработчики ошибок
 # ---------------------------------------------------------
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(

@@ -52,7 +52,7 @@ class SMTPEmailNotificationsSettings(BaseModel):
     from_email: str
     use_tls: bool = True
     start_tls: bool = False
-    timeout_seconds: float = 5.0
+    timeout_seconds: float = 10.0
 
 
 class NotificationsSettings(BaseModel):

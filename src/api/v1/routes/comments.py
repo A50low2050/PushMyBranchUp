@@ -387,13 +387,7 @@ async def update_comment(
         200: {
             "description": "Комментарий успешно удалён",
             "content": {
-                "application/json": {
-                    "example": {
-                        "data": {
-                            "deleted_count": 1
-                        }
-                    }
-                }
+                "application/json": {"example": {"data": {"deleted_count": 1}}}
             },
         },
         400: {
