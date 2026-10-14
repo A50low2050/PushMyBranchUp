@@ -16,11 +16,74 @@ router = APIRouter(
 
 @router.put(
     "/{post_id}/like",
+    summary="Поставить или убрать лайк",
+    description=(
+        "Переключает состояние лайка на указанном посте.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Как работает:**\n"
+        "- Если пользователь ещё не лайкнул пост — лайк добавляется.\n"
+        "- Если пользователь уже лайкнул пост — лайк удаляется.\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста, которому нужно поставить "
+        "или с которого нужно убрать лайк.\n\n"
+        "**Тело запроса не требуется.**\n\n"
+        "ID пользователя определяется автоматически по access-токену.\n\n"
+        "**Ограничения:**\n"
+        "- Указанный пост должен существовать.\n"
+        "- Для установки и удаления лайка используется один метод PUT.\n\n"
+        "В ответе возвращается текущее состояние лайка."
+    ),
     response_model=LikeResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Состояние лайка успешно изменено",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "liked": {
+                            "summary": "Лайк поставлен",
+                            "value": {
+                                "post_id": 1,
+                                "user_id": 2,
+                                "is_liked": True,
+                            },
+                        },
+                        "unliked": {
+                            "summary": "Лайк снят",
+                            "value": {
+                                "post_id": 1,
+                                "user_id": 2,
+                                "is_liked": False,
+                            },
+                        },
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Пост с указанным ID не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID поста",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def toggle_like(
@@ -39,29 +102,3 @@ async def toggle_like(
         raise DBQueryHTTPError from exc
 
     return result
-
-
-@router.post(
-    "/{post_id}/like",
-    response_model=LikeResponseDTO,
-    responses={
-        404: {"model": ErrorResponseDTO},
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def add_like(post_id: int) -> LikeResponseDTO:
-    # TODO: Implement after the service layer is ready
-    raise NotImplementedError
-
-
-@router.delete(
-    "/{post_id}/like",
-    response_model=LikeResponseDTO,
-    responses={
-        404: {"model": ErrorResponseDTO},
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def delete_like(post_id: int) -> LikeResponseDTO:
-    # TODO: Implement after the service layer is ready
-    raise NotImplementedError
