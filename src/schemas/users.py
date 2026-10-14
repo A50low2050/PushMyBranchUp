@@ -15,22 +15,43 @@ class UserDTO(BaseDTO):
 
 
 class UserLoginDTO(BaseDTO):
-    email: EmailStr
-    password: str = Field(min_length=1)
+    email: EmailStr = Field(
+        description="Электронная почта, указанная при регистрации.",
+        examples=["alex@example.com"],
+    )
+    password: str = Field(
+        min_length=1,
+        description="Пароль пользователя.",
+        examples=["ExamplePass123!"],
+    )
 
 
 class UserRegisterDTO(BaseDTO):
-    username: str = Field(min_length=3, max_length=255)
-    email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=128)
+    username: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Имя пользователя, от 3 до 255 символов.",
+        examples=["alex"],
+    )
+    email: EmailStr = Field(
+        max_length=255,
+        description="Адрес электронной почты.",
+        examples=["alex@example.com"],
+    )
+    password: str = Field(
+        min_length=8,
+        max_length=128,
+        description="Пароль, от 8 до 128 символов.",
+        examples=["ExamplePass123!"],
+    )
 
 
 class UserResponseDTO(BaseDTO):
-    id: int
-    username: str
-    email: EmailStr
-    created_at: datetime
-    updated_at: datetime
+    id: int = Field(description="Уникальный ID пользователя")
+    username: str = Field(description="Имя пользователя")
+    email: EmailStr = Field(description="Электронная почта пользователя")
+    created_at: datetime = Field(description="Дата и время регистрации")
+    updated_at: datetime = Field(description="Дата и время последнего изменения профиля")
 
 
 class UserSingleResponseDTO(BaseDTO):
@@ -54,4 +75,9 @@ class UserAddDTO(BaseDTO):
 
 
 class UserUpdateDTO(BaseDTO):
-    username: str = Field(min_length=3, max_length=255)
+    username: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Новое имя пользователя, от 3 до 255 символов.",
+        examples=["alex_new"],
+    )

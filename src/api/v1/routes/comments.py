@@ -35,12 +35,58 @@ router = APIRouter(
 
 @router.post(
     "/{post_id}/comments",
+    summary="Создать комментарий",
+    description=(
+        "Добавляет новый комментарий к указанному посту.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста, к которому добавляется комментарий.\n"
+        "- `content` — текст комментария от 1 до 2200 символов.\n\n"
+        "Комментарий не может состоять только из пробелов.\n\n"
+        "ID автора определяется автоматически по access-токену."
+    ),
     response_model=CommentResponseDTO,
     status_code=status.HTTP_201_CREATED,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        201: {
+            "description": "Комментарий успешно создан",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": 1,
+                        "post_id": 10,
+                        "user_id": 2,
+                        "content": "Отличный пост! Спасибо за информацию.",
+                        "created_at": "2026-10-13T12:00:00",
+                        "updated_at": "2026-10-13T12:00:00",
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Указанный пост не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID поста или текст комментария",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def create_comment(
@@ -69,10 +115,75 @@ async def create_comment(
 
 @router.get(
     "/{post_id}/comments",
+    summary="Получить комментарии поста",
+    description=(
+        "Возвращает список комментариев указанного поста с пагинацией.\n\n"
+        "**Авторизация не требуется.**\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста.\n"
+        "- `limit` — количество комментариев на странице (от 1 до 15, по умолчанию 5).\n"
+        "- `offset` — количество пропускаемых комментариев (по умолчанию 0).\n\n"
+        "**Пример:** `limit=5&offset=10` — получить третью страницу "
+        "при размере страницы 5 комментариев.\n\n"
+        "**Ответ содержит:**\n"
+        "- `page` — номер текущей страницы.\n"
+        "- `per_page` — количество комментариев на странице.\n"
+        "- `total_pages` — общее количество страниц.\n"
+        "- `data` — массив комментариев.\n\n"
+        "Если комментариев нет, возвращается пустой массив `data`."
+    ),
     response_model=CommentFeedResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Список комментариев успешно получен",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "page": 1,
+                        "per_page": 5,
+                        "total_pages": 1,
+                        "data": [
+                            {
+                                "id": 1,
+                                "post_id": 10,
+                                "user_id": 2,
+                                "content": "Отличный пост!",
+                                "created_at": "2026-10-13T12:00:00",
+                                "updated_at": "2026-10-13T12:00:00",
+                            },
+                            {
+                                "id": 2,
+                                "post_id": 10,
+                                "user_id": 3,
+                                "content": "Спасибо за информацию!",
+                                "created_at": "2026-10-13T12:10:00",
+                                "updated_at": "2026-10-13T12:10:00",
+                            },
+                        ],
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Указанный пост не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректные параметры пагинации или ID поста",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def get_comments(
@@ -106,10 +217,53 @@ async def get_comments(
 
 @router.get(
     "/{post_id}/comments/{comment_id}",
+    summary="Получить комментарий по ID",
+    description=(
+        "Возвращает информацию об одном комментарии указанного поста.\n\n"
+        "**Авторизация не требуется.**\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста.\n"
+        "- `comment_id` — ID комментария.\n\n"
+        "В ответе возвращаются текст комментария, "
+        "ID автора, ID поста и даты создания и изменения."
+    ),
     response_model=CommentResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Комментарий успешно получен",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": 1,
+                        "post_id": 10,
+                        "user_id": 2,
+                        "content": "Отличный пост!",
+                        "created_at": "2026-10-13T12:00:00",
+                        "updated_at": "2026-10-13T12:00:00",
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Комментарий не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID поста или комментария",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def get_comment(
@@ -131,12 +285,63 @@ async def get_comment(
 
 @router.patch(
     "/{post_id}/comments/{comment_id}",
+    summary="Редактировать комментарий",
+    description=(
+        "Изменяет текст существующего комментария.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Редактировать комментарий может только его автор.**\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста.\n"
+        "- `comment_id` — ID редактируемого комментария.\n"
+        "- `content` — новый текст комментария от 1 до 2200 символов.\n\n"
+        "Комментарий не может состоять только из пробелов.\n\n"
+        "После успешного изменения возвращаются обновлённые данные комментария."
+    ),
     response_model=CommentResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        403: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Комментарий успешно обновлён",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": 1,
+                        "post_id": 10,
+                        "user_id": 2,
+                        "content": "Обновлённый текст комментария.",
+                        "created_at": "2026-10-13T12:00:00",
+                        "updated_at": "2026-10-13T13:00:00",
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        403: {
+            "model": ErrorResponseDTO,
+            "description": "Недостаточно прав. Редактировать комментарий может только автор",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Комментарий не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID или текст комментария",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def update_comment(
@@ -165,12 +370,60 @@ async def update_comment(
 
 @router.delete(
     "/{post_id}/comments/{comment_id}",
+    summary="Удалить комментарий",
+    description=(
+        "Удаляет комментарий из указанного поста.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Удалить комментарий может только его автор.**\n\n"
+        "**Параметры:**\n"
+        "- `post_id` — ID поста.\n"
+        "- `comment_id` — ID удаляемого комментария.\n\n"
+        "**Тело запроса не требуется.**\n\n"
+        "После успешного удаления возвращается количество удалённых комментариев "
+        "в поле `data.deleted_count`."
+    ),
     response_model=CommentDeleteResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        403: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Комментарий успешно удалён",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "data": {
+                            "deleted_count": 1
+                        }
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        403: {
+            "model": ErrorResponseDTO,
+            "description": "Недостаточно прав. Удалить комментарий может только автор",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Комментарий не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID поста или комментария",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def delete_comment(

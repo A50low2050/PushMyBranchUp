@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from src.schemas.base import BaseDTO
+from pydantic import Field
 
 
 class RefreshTokenCreateDTO(BaseDTO):
@@ -32,6 +33,13 @@ class RefreshTokenDTO(BaseDTO):
 
 
 class IssuedTokens(BaseDTO):
-    access_token: str
-    refresh_token: str
-    type: str = "Bearer"
+    access_token: str = Field(
+        description="Access-токен для авторизации запросов через кнопку Authorize.",
+    )
+    refresh_token: str = Field(
+        description="Refresh-токен для обновления авторизации. Также сохраняется в HttpOnly cookie.",
+    )
+    type: str = Field(
+        default="Bearer",
+        description="Тип токена авторизации.",
+    )

@@ -17,11 +17,74 @@ router = APIRouter(
 
 @router.put(
     "/{user_id}/follow",
+    summary="Подписаться или отписаться от пользователя",
+    description=(
+        "Переключает состояние подписки на указанного пользователя.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Как работает:**\n"
+        "- Если вы ещё не подписаны на пользователя — создаётся подписка.\n"
+        "- Если вы уже подписаны — подписка отменяется.\n\n"
+        "**Параметры:**\n"
+        "- `user_id` — ID пользователя, на которого нужно подписаться "
+        "или от которого нужно отписаться.\n\n"
+        "**Тело запроса не требуется.**\n\n"
+        "ID текущего пользователя определяется автоматически по access-токену.\n\n"
+        "**Ограничения:**\n"
+        "- Нельзя подписаться на самого себя.\n"
+        "- Указанный пользователь должен существовать.\n\n"
+        "Для подписки и отписки используется один и тот же метод PUT."
+    ),
     response_model=FollowResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Состояние подписки успешно изменено",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "follow": {
+                            "summary": "Подписка оформлена",
+                            "value": {
+                                "follower_id": 1,
+                                "followed_id": 2,
+                                "followed": True,
+                            },
+                        },
+                        "unfollow": {
+                            "summary": "Подписка отменена",
+                            "value": {
+                                "follower_id": 1,
+                                "followed_id": 2,
+                                "followed": False,
+                            },
+                        },
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Нельзя подписаться на самого себя",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь с указанным ID не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID пользователя",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def toggle_follow(
@@ -44,30 +107,3 @@ async def toggle_follow(
         raise BadRequestHTTPError from exc
 
     return result
-
-
-@router.post(
-    "/{user_id}/follow",
-    response_model=FollowResponseDTO,
-    responses={
-        400: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def follow_user(user_id: int) -> FollowResponseDTO:
-    # TODO: Implement after the service layer is ready
-    raise NotImplementedError
-
-
-@router.delete(
-    "/{user_id}/follow",
-    response_model=FollowResponseDTO,
-    responses={
-        404: {"model": ErrorResponseDTO},
-        409: {"model": ErrorResponseDTO},
-    },
-)
-async def unfollow_user(user_id: int) -> FollowResponseDTO:
-    # TODO: Implement after the service layer is ready
-    raise NotImplementedError
