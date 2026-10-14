@@ -26,9 +26,74 @@ router = APIRouter(
 
 @router.get(
     "",
+    summary="Получить список пользователей",
+    description=(
+        "Возвращает список зарегистрированных пользователей с пагинацией.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Параметры:**\n"
+        "- `limit` — количество пользователей на странице "
+        "(от 1 до 15, по умолчанию 5).\n"
+        "- `offset` — количество пропускаемых пользователей "
+        "(по умолчанию 0).\n\n"
+        "**Пример:** `limit=5&offset=10` — получить третью страницу "
+        "при размере страницы 5 пользователей.\n\n"
+        "**Ответ содержит:**\n"
+        "- `page` — номер текущей страницы.\n"
+        "- `per_page` — количество пользователей на странице.\n"
+        "- `total_pages` — общее количество страниц.\n"
+        "- `data` — массив пользователей.\n\n"
+        "Если пользователей нет, возвращается пустой массив `data`."
+    ),
+    response_model=UserGetAllResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Список пользователей успешно получен",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "page": 1,
+                        "per_page": 5,
+                        "total_pages": 1,
+                        "data": [
+                            {
+                                "id": 1,
+                                "username": "alex",
+                                "email": "alex@example.com",
+                                "created_at": "2026-10-13T12:00:00",
+                                "updated_at": "2026-10-13T12:00:00",
+                            },
+                            {
+                                "id": 2,
+                                "username": "maria",
+                                "email": "maria@example.com",
+                                "created_at": "2026-10-13T12:10:00",
+                                "updated_at": "2026-10-13T12:10:00",
+                            },
+                        ],
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректные параметры пагинации",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def get_users(
@@ -59,10 +124,62 @@ async def get_users(
 
 @router.get(
     "/{user_id}",
+    summary="Получить пользователя по ID",
+    description=(
+        "Возвращает информацию об указанном пользователе.\n\n"
+        "**Требуется авторизация** через access-токен.\n\n"
+        "**Параметры:**\n"
+        "- `user_id` — уникальный ID пользователя.\n\n"
+        "**Ответ содержит:**\n"
+        "- `id` — ID пользователя.\n"
+        "- `username` — имя пользователя.\n"
+        "- `email` — электронная почта.\n"
+        "- `created_at` — дата регистрации.\n"
+        "- `updated_at` — дата последнего изменения профиля.\n\n"
+        "Данные пользователя возвращаются внутри объекта `data`."
+    ),
+    response_model=UserSingleResponseDTO,
     responses={
-        400: {"model": ErrorResponseDTO},
-        401: {"model": ErrorResponseDTO},
-        404: {"model": ErrorResponseDTO},
+        200: {
+            "description": "Пользователь успешно найден",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "data": {
+                            "id": 1,
+                            "username": "alex",
+                            "email": "alex@example.com",
+                            "created_at": "2026-10-13T12:00:00",
+                            "updated_at": "2026-10-13T12:00:00",
+                        }
+                    }
+                }
+            },
+        },
+        400: {
+            "model": ErrorResponseDTO,
+            "description": "Ошибка запроса к базе данных",
+        },
+        401: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь не авторизован",
+        },
+        404: {
+            "model": ErrorResponseDTO,
+            "description": "Пользователь с указанным ID не найден",
+        },
+        422: {
+            "model": ErrorResponseDTO,
+            "description": "Некорректный ID пользователя",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "VALIDATION_ERROR",
+                        "message": "Invalid request data",
+                    }
+                }
+            },
+        },
     },
 )
 async def get_user(

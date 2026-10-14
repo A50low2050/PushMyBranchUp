@@ -4,7 +4,12 @@ from datetime import datetime
 
 
 class PostCreateDTO(BaseDTO):
-    content: str = Field(min_length=1, max_length=2200)
+    content: str = Field(
+        min_length=1,
+        max_length=2200,
+        description="Текст поста. От 1 до 2200 символов, не может состоять только из пробелов.",
+        examples=["Сегодня начал работать над новым проектом!"],
+    )
 
     @field_validator("content")
     @classmethod
@@ -23,8 +28,13 @@ class PostDTO(BaseDTO):
 
 
 class PostEditDTO(BaseDTO):
-    content: str = Field(min_length=1, max_length=2200)
-
+    content: str = Field(
+        min_length=1,
+        max_length=2200,
+        description="Текст поста. От 1 до 2200 символов, не может состоять только из пробелов.",
+        examples=["Сегодня начал работать над новым проектом!"],
+    )
+    
     @field_validator("content")
     @classmethod
     def validate_text(cls, value: str) -> str:
@@ -34,14 +44,14 @@ class PostEditDTO(BaseDTO):
 
 
 class PostResponseDTO(BaseDTO):
-    post_id: int
-    user_id: int
-    content: str
-    likes_count: int
-    is_liked: bool
-    comments_count: int
-    created_at: datetime
-    updated_at: datetime
+    post_id: int = Field(description="Уникальный ID поста")
+    user_id: int = Field(description="ID автора поста")
+    content: str = Field(description="Текст поста")
+    likes_count: int = Field(description="Количество лайков")
+    is_liked: bool = Field(description="Поставил ли текущий пользователь лайк")
+    comments_count: int = Field(description="Количество комментариев")
+    created_at: datetime = Field(description="Дата и время создания поста")
+    updated_at: datetime = Field(description="Дата и время последнего изменения поста")
 
 
 class PostAddDTO(BaseDTO):
@@ -50,10 +60,10 @@ class PostAddDTO(BaseDTO):
 
 
 class PostFeedResponseDTO(BaseDTO):
-    page: int
-    per_page: int
-    total_pages: int
-    data: list[PostResponseDTO]
+    page: int = Field(description="Номер текущей страницы")
+    per_page: int = Field(description="Количество постов на странице")
+    total_pages: int = Field(description="Общее количество страниц")
+    data: list[PostResponseDTO] = Field(description="Список постов")
 
 
 class SinglePostResponseDTO(BaseDTO):
@@ -61,9 +71,9 @@ class SinglePostResponseDTO(BaseDTO):
 
 
 class PostDeleteResultDTO(BaseDTO):
-    comments: int
-    likes: int
-    posts: int
+    comments: int = Field(description="Количество удалённых комментариев")
+    likes: int = Field(description="Количество удалённых лайков")
+    posts: int = Field(description="Количество удалённых постов")
 
 
 class PostDeleteResponseDTO(BaseDTO):
