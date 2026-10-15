@@ -45,18 +45,20 @@ class AuthSettings(BaseModel):
 
 
 class SMTPEmailNotificationsSettings(BaseModel):
-    host: str
-    port: int
-    user: str
-    password: SecretStr
-    from_email: str
+    host: str = "localhost"
+    port: int = 587
+    user: str = ""
+    password: SecretStr = SecretStr("")
+    from_email: str = ""
     use_tls: bool = True
     start_tls: bool = False
     timeout_seconds: float = 10.0
 
 
 class NotificationsSettings(BaseModel):
-    email: SMTPEmailNotificationsSettings
+    enabled: bool = True
+    auto_disable_on_error: bool = True
+    email: SMTPEmailNotificationsSettings = SMTPEmailNotificationsSettings()
 
 
 class Settings(BaseSettings):
