@@ -88,7 +88,9 @@ class TestLogin:
         assert f"Max-Age={settings.cookie.max_age}" in set_cookie
         assert "HttpOnly" in set_cookie
 
-    async def test_refresh_token_cookie(self, client, register_payload, registered_user):
+    async def test_refresh_token_cookie(
+        self, client, register_payload, registered_user
+    ):
         """Обновление токена возвращает новые токены и выставляет cookie с параметрами."""
         login_resp = await client.post(
             route_path("/auth/login"),
@@ -106,7 +108,9 @@ class TestLogin:
         assert f"Max-Age={settings.cookie.max_age}" in set_cookie
         assert "HttpOnly" in set_cookie
 
-    async def test_logout_deletes_cookie(self, client, register_payload, registered_user):
+    async def test_logout_deletes_cookie(
+        self, client, register_payload, registered_user
+    ):
         """Выход из аккаунта отзывает токен и удаляет cookie."""
         login_resp = await client.post(
             route_path("/auth/login"),
