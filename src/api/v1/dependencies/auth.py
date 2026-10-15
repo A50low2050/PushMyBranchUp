@@ -95,7 +95,9 @@ class RefreshTokenResolver:
             token = await TokenService(db).get_refresh_token(hashed_refresh_t)
             current_time = datetime.now(UTC).replace(tzinfo=None)
             if token.expires_at <= current_time:
-                raise ExpiredTokenHTTPError("Refresh токен устарел, пройдите авторизацию заново")
+                raise ExpiredTokenHTTPError(
+                    "Refresh токен устарел, пройдите авторизацию заново"
+                )
 
         except ObjectNotFoundError as exc:
             raise WithdrawnTokenHTTPError("Refresh токен отозван") from exc

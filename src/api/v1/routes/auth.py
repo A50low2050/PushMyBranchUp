@@ -228,6 +228,9 @@ async def login(
         key=settings.auth.refresh_token_cookie_name,
         value=tokens.refresh_token,
         httponly=True,
+        samesite="lax",
+        secure=False,
+        path="/",
     )
     return tokens
 
@@ -302,6 +305,9 @@ async def refresh_token(
         key=settings.auth.refresh_token_cookie_name,
         value=tokens.refresh_token,
         httponly=True,
+        samesite="lax",
+        secure=False,
+        path="/",
     )
     return tokens
 
@@ -357,7 +363,13 @@ async def logout(
     except DBQueryError as exc:
         raise DBQueryHTTPError from exc
 
-    response.delete_cookie(settings.auth.refresh_token_cookie_name)
+    response.delete_cookie(
+        settings.auth.refresh_token_cookie_name,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        path="/",
+    )
 
 
 @router.patch(
