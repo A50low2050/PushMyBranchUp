@@ -104,7 +104,9 @@ class PostsRepo(BaseRepo):
 
         return [self._row_to_dto(row) for row in results.all()]
 
-    async def get_post_with_rel(self, post_id: int, user_id: int | None) -> PostResponseDTO:
+    async def get_post_with_rel(
+        self, post_id: int, user_id: int | None
+    ) -> PostResponseDTO:
         query = self._get_posts_query_with_metrics(user_id).where(PostORM.id == post_id)
         try:
             result = await self.session.execute(query)
