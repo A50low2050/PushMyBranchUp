@@ -20,8 +20,6 @@ os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PASSWORD", "test-password-12345
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL", "noreply@test.local")
 
 
-from unittest.mock import MagicMock
-
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -37,6 +35,9 @@ from src.api.v1.dependencies.cache import get_cache
 from src.api.v1.dependencies.db import get_db
 from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
+from unittest.mock import MagicMock
+
+# Регистрируем все таблицы в metadata
 from src.models import (  # noqa: F401
     comments,
     likes,

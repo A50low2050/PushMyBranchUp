@@ -95,7 +95,7 @@ class CommentsService(BaseService):
             limit=limit,
             offset=offset,
         )
-        total_count = await self.db.comments.get_total()
+        total_count = await self.db.comments.get_total(post_id=post_id)
         return [CommentResponseDTO.model_validate(c) for c in comments], total_count
 
     async def get_comment(
