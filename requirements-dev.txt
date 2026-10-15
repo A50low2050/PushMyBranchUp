@@ -1,0 +1,10 @@
+# зависимости для разработки (ставятся поверх requirements.txt)
+-r requirements.txt
+
+pytest==9.1.1
+pytest-asyncio==1.4.0
+httpx==0.28.1
+black==26.10.0
+flake8==7.4.1
+mypy==2.4.0
+pre-commit==4.6.2
