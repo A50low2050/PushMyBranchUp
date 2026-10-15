@@ -225,12 +225,14 @@ async def login(
         raise DBQueryHTTPError from exc
 
     response.set_cookie(
-        key=settings.auth.refresh_token_cookie_name,
+        key=settings.cookie.key,
         value=tokens.refresh_token,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        path="/",
+        max_age=settings.cookie.max_age,
+        httponly=settings.cookie.httponly,
+        samesite=settings.cookie.samesite,
+        secure=settings.cookie.secure,
+        path=settings.cookie.path,
+        domain=settings.cookie.domain,
     )
     return tokens
 
@@ -302,12 +304,14 @@ async def refresh_token(
         raise DBQueryHTTPError from exc
 
     response.set_cookie(
-        key=settings.auth.refresh_token_cookie_name,
+        key=settings.cookie.key,
         value=tokens.refresh_token,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        path="/",
+        max_age=settings.cookie.max_age,
+        httponly=settings.cookie.httponly,
+        samesite=settings.cookie.samesite,
+        secure=settings.cookie.secure,
+        path=settings.cookie.path,
+        domain=settings.cookie.domain,
     )
     return tokens
 
@@ -364,11 +368,12 @@ async def logout(
         raise DBQueryHTTPError from exc
 
     response.delete_cookie(
-        settings.auth.refresh_token_cookie_name,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        path="/",
+        key=settings.cookie.key,
+        httponly=settings.cookie.httponly,
+        samesite=settings.cookie.samesite,
+        secure=settings.cookie.secure,
+        path=settings.cookie.path,
+        domain=settings.cookie.domain,
     )
 
 

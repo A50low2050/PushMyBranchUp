@@ -1,7 +1,8 @@
 from datetime import timedelta
 from pathlib import Path
+from typing import Any, Literal
 
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent
@@ -33,6 +34,29 @@ class DBSettings(BaseModel):
     expire_on_commit: bool = False
 
 
+class CookieSettings(BaseModel):
+    """настройки cookie для refresh-токена"""
+
+    key: str = "refresh_token"
+    max_age: int = 30 * 24 * 60 * 60
+    httponly: bool = True
+    samesite: Literal["lax", "strict", "none"] = "lax"
+    secure: bool = False
+    path: str = "/"
+    domain: str | None = None
+
+    @field_validator("max_age", mode="before")
+    @classmethod
+    def parse_max_age(cls, v: Any) -> int:
+        if isinstance(v, timedelta):
+            return int(v.total_seconds())
+        return int(v)
+
+    @property
+    def name(self) -> str:
+        return self.key
+
+
 class AuthSettings(BaseModel):
     """настройки аутентификации"""
 
@@ -40,8 +64,19 @@ class AuthSettings(BaseModel):
     algorithm: str = "HS256"
     access_token_expire_delta: timedelta = timedelta(minutes=15)
     refresh_token_expire_delta: timedelta = timedelta(days=30)
-    refresh_token_cookie_name: str = "refresh_token"
     access_token_blacklist_prefix: str = "blacklist:"
+
+    @property
+    def refresh_token_cookie_name(self) -> str:
+        return settings.cookie.key
+
+    @property
+    def cookie(self) -> CookieSettings:
+        return settings.cookie
+
+    @property
+    def cookies(self) -> CookieSettings:
+        return settings.cookie
 
 
 class SMTPEmailNotificationsSettings(BaseModel):
@@ -67,6 +102,11 @@ class Settings(BaseSettings):
     auth: AuthSettings
     notifications: NotificationsSettings
     fastapi: FastAPISettings = FastAPISettings()
+    cookie: CookieSettings = CookieSettings()
+
+    @property
+    def cookies(self) -> CookieSettings:
+        return self.cookie
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

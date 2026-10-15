@@ -2,6 +2,7 @@
 
 import pytest
 
+from src.config import settings
 from src.tests.conftest import route_path
 
 pytestmark = pytest.mark.auth
@@ -81,8 +82,49 @@ class TestLogin:
         assert "access_token" in data
         assert "refresh_token" in data
         assert data["type"] == "Bearer"
-        # Refresh-токен должен быть в cookie
-        assert "refresh_token" in response.cookies
+        # Refresh-токен должен быть в cookie с заданными параметрами
+        assert settings.cookie.key in response.cookies
+        set_cookie = response.headers.get("set-cookie", "")
+        assert f"Max-Age={settings.cookie.max_age}" in set_cookie
+        assert "HttpOnly" in set_cookie
+
+    async def test_refresh_token_cookie(self, client, register_payload, registered_user):
+        """Обновление токена возвращает новые токены и выставляет cookie с параметрами."""
+        login_resp = await client.post(
+            route_path("/auth/login"),
+            json={
+                "email": register_payload["email"],
+                "password": register_payload["password"],
+            },
+        )
+        assert login_resp.status_code == 200
+
+        refresh_resp = await client.post(route_path("/auth/refresh"))
+        assert refresh_resp.status_code == 200
+        assert settings.cookie.key in refresh_resp.cookies
+        set_cookie = refresh_resp.headers.get("set-cookie", "")
+        assert f"Max-Age={settings.cookie.max_age}" in set_cookie
+        assert "HttpOnly" in set_cookie
+
+    async def test_logout_deletes_cookie(self, client, register_payload, registered_user):
+        """Выход из аккаунта отзывает токен и удаляет cookie."""
+        login_resp = await client.post(
+            route_path("/auth/login"),
+            json={
+                "email": register_payload["email"],
+                "password": register_payload["password"],
+            },
+        )
+        assert login_resp.status_code == 200
+        access_token = login_resp.json()["access_token"]
+
+        logout_resp = await client.post(
+            route_path("/auth/logout"),
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        assert logout_resp.status_code == 204
+        set_cookie = logout_resp.headers.get("set-cookie", "")
+        assert "Max-Age=0" in set_cookie or "expires=" in set_cookie.lower()
 
     async def test_login_wrong_password(self, client, registered_user):
         """Вход с неверным паролем возвращает 400."""

@@ -79,7 +79,7 @@ class AccessTokenResolver:
 class RefreshTokenResolver:
     @staticmethod
     def _get_refresh_token(request: Request) -> str:
-        cookie = settings.auth.refresh_token_cookie_name
+        cookie = settings.cookie.key
         token = request.cookies.get(cookie)
         if not token:
             raise UnauthorizedHTTPError("Отсутствует Refresh токен в cookie")
