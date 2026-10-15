@@ -1,3 +1,5 @@
+# flake8: noqa: E402
+
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
@@ -33,8 +35,6 @@ from src.api.v1.dependencies.cache import get_cache
 from src.api.v1.dependencies.db import get_db
 from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
-from src.models.base import BaseORM
-from src.utils.cacheserv import InMemoryAsyncCacheService
 from unittest.mock import MagicMock
 
 # Регистрируем все таблицы в metadata
@@ -46,10 +46,11 @@ from src.models import (  # noqa: F401
     tokens,
     users,
 )
+from src.models.base import BaseORM
+from src.utils.cacheserv import InMemoryAsyncCacheService
 
 test_engine = create_async_engine(os.environ["ENV_DATABASE__URL"], echo=False)
 
-# Включаем foreign keys в тестовой БД
 event.listens_for(test_engine.sync_engine, "connect")(enable_sqlite_foreign_keys)
 
 async_test_sessionmaker = async_sessionmaker(

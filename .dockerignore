@@ -1,0 +1,10 @@
+.venv
+.vscode
+.git
+.mypy_cache
+.pytest_cache
+files
+Dockerfile
+docker-compose.yaml
+README.md
+.pre-commit-config.yaml
