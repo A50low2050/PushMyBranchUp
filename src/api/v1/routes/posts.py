@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Path, BackgroundTasks
 
 
-from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.auth import GetSubDep, GetOptionalSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
@@ -213,9 +213,12 @@ async def create_post(
     "",
     summary="Получить список постов",
     description=(
+        "Публичный маршрут, авторизация не требуется. "
         "Возвращает список постов с постраничной навигацией. "
-        "Количество записей и смещение задаются параметрами "
-        "пагинации."
+        "Количество лайков и комментариев доступно всем. "
+        "Поле is_liked показывает, поставил ли текущий пользователь лайк. "
+        "Для неавторизованных пользователей is_liked всегда false. "
+        "Количество записей и смещение задаются параметрами пагинации."
     ),
     responses={
         200: {
@@ -247,7 +250,7 @@ async def create_post(
 )
 async def get_posts(
     pagination: PaginationParams,
-    sub: GetSubDep,
+    sub: GetOptionalSubDep,
     db: DatabaseDep,
 ) -> PostFeedResponseDTO:
     try:
@@ -332,7 +335,10 @@ async def get_posts_feed(
     "/{post_id}",
     summary="Получить пост",
     description=(
-        "Возвращает пост по его ID, включая количество лайков " "и комментариев."
+        "Публичный маршрут, авторизация не требуется. "
+        "Возвращает пост по его ID, включая количество лайков и комментариев. "
+        "Поле is_liked показывает, поставил ли текущий пользователь лайк. "
+        "Для неавторизованных пользователей is_liked всегда false."
     ),
     responses={
         200: {
@@ -353,7 +359,7 @@ async def get_post(
             openapi_examples=POST_ID_EXAMPLES,
         ),
     ],
-    sub: GetSubDep,
+    sub: GetOptionalSubDep,
     db: DatabaseDep,
 ) -> SinglePostResponseDTO:
     try:

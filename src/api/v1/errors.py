@@ -63,6 +63,7 @@ class UnauthorizedHTTPError(ApplicationHTTPError):
 class InvalidTokenHTTPError(ApplicationHTTPError):
     detail = "Неверный токен"
     status_code = status.HTTP_401_UNAUTHORIZED
+    error = "UNAUTHORIZED"
 
 
 class WithdrawnTokenHTTPError(ApplicationHTTPError):
