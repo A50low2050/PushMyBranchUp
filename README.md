@@ -13,9 +13,11 @@ git clone https://github.com/A50low2050/PushMyBranchUp.git
 python -m venv .venv
 # активируем его
 .venv\Scripts\activate
-# устанавливаем библиотеки
-pip install -r requirements.txt
+# устанавливаем библиотеки для разработки (приложение + тесты + линтеры)
+pip install -r requirements-dev.txt
 ```
+
+Если нужен только запуск приложения без инструментов разработки, достаточно `pip install -r requirements.txt`.
 
 Далее создаём `.env` файл на основе `.env.example`.
 
