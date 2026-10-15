@@ -18,4 +18,13 @@ if __name__ == "__main__":
         port=settings.uvicorn.port,
         reload=settings.uvicorn.reload,
         log_config=log_config,
+        reload_dirs=[
+            "src",
+        ],
+        reload_excludes=[
+            "logs/*",
+            "data/*",
+            "*.log",
+            "*.sqlite3*",
+        ],
     )
