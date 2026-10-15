@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Annotated
 
 import jwt
@@ -10,6 +11,7 @@ from fastapi.security import (
 from src.api.v1.dependencies.cache import CacheDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.errors import (
+    ExpiredTokenHTTPError,
     InvalidTokenHTTPError,
     UnauthorizedHTTPError,
     WithdrawnTokenHTTPError,
@@ -91,6 +93,9 @@ class RefreshTokenResolver:
         hashed_refresh_t = HashService.hash_data(refresh_t)
         try:
             token = await TokenService(db).get_refresh_token(hashed_refresh_t)
+            if token.expires_at > datetime.now(UTC):
+                raise ExpiredTokenHTTPError("Refresh токен устарел")
+
         except ObjectNotFoundError as exc:
             raise WithdrawnTokenHTTPError("Refresh токен отозван") from exc
         return token
