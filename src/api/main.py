@@ -38,16 +38,30 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     await cacheserv.ping()
     logger.info("Подключение к кэшу успешно установлено!")
     app.state.cache = cacheserv
+    logger.info("Проверка системы уведомлений...")
+    if not settings.notifications.enabled:
+        logger.warning("Система уведомлений отключена в конфигурации.")
+        app.state.notifications = NotificationService(enabled=False)
+    else:
+        logger.info("Проверка подключения к SMTP-серверу...")
+        smtp_provider = SMTPProvider()
 
-    logger.info("Проверка подключения к SMTP-серверу...")
-    smtp_provider = SMTPProvider()
-
-    smtp_is_available = await smtp_provider.ping()
-    if not smtp_is_available:
-        raise SMTPConnectionError
-
-    logger.info("Успешно подключено к SMTP-серверу...")
-    app.state.notifications = NotificationService(providers={"email": smtp_provider})
+        smtp_is_available = await smtp_provider.ping()
+        if not smtp_is_available:
+            if settings.notifications.auto_disable_on_error:
+                logger.warning(
+                    "Не удалось подключиться к SMTP-серверу. "
+                    "Система уведомлений автоматически отключена."
+                )
+                app.state.notifications = NotificationService(enabled=False)
+            else:
+                raise SMTPConnectionError
+        else:
+            logger.info("Успешно подключено к SMTP-серверу...")
+            app.state.notifications = NotificationService(
+                providers={"email": smtp_provider},
+                enabled=True,
+            )
 
     yield
 
