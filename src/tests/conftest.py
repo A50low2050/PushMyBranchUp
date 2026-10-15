@@ -18,7 +18,6 @@ os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PASSWORD", "test-password-12345
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL", "noreply@test.local")
 
 
-
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -37,7 +36,6 @@ from src.db.manager import DBManager
 from src.models.base import BaseORM
 from src.utils.cacheserv import InMemoryAsyncCacheService
 from unittest.mock import MagicMock
-
 
 # Регистрируем все таблицы в metadata
 from src.models import (  # noqa: F401
