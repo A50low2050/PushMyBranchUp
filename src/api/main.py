@@ -76,9 +76,8 @@ app = FastAPI(
 )
 
 
-# ---------------------------------------------------------
-# Примеры ошибок для Swagger
-# ---------------------------------------------------------
+# Примеры ошибок в Swagger
+
 
 ERROR_EXAMPLES: dict[str, dict[str, str]] = {
     "400": {
@@ -192,9 +191,7 @@ def add_error_examples(openapi_schema: dict[str, Any]) -> None:
                 json_content["example"] = deepcopy(example)
 
 
-# ---------------------------------------------------------
-# OpenAPI и описание авторизации
-# ---------------------------------------------------------
+# Заголовок и описание авторизации
 
 
 def custom_openapi() -> dict[str, Any]:
@@ -229,9 +226,7 @@ def custom_openapi() -> dict[str, Any]:
 app.openapi = custom_openapi  # type: ignore
 
 
-# ---------------------------------------------------------
-# Swagger UI
-# ---------------------------------------------------------
+# Swagger интерфейс
 
 
 @app.get("/docs", include_in_schema=False)
@@ -372,9 +367,7 @@ async def custom_swagger_ui() -> HTMLResponse:
     return HTMLResponse(content=html)
 
 
-# ---------------------------------------------------------
 # Обработчики ошибок
-# ---------------------------------------------------------
 
 
 @app.exception_handler(HTTPException)
