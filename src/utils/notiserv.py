@@ -109,10 +109,27 @@ class SMTPProvider(BaseNotificationProvider):
 
 
 class NotificationService:
-    def __init__(self, providers: dict[str, BaseNotificationProvider]) -> None:
-        self._providers = providers
+    def __init__(
+        self,
+        providers: dict[str, BaseNotificationProvider] | None = None,
+        enabled: bool = True,
+    ) -> None:
+        self._providers = providers or {}
+        self._enabled = enabled
+
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, value: bool) -> None:
+        self._enabled = bool(value)
 
     async def notify(self, messages: list[NotificationStrategy]) -> None:
+        if not self._enabled:
+            logger.info("Система уведомлений отключена. Отправка пропущена.")
+            return
+
         groups: dict[str, list[NotificationStrategy]] = {}
         for msg in messages:
             key = getattr(msg, "provider_key", None)
