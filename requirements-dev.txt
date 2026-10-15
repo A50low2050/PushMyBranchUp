@@ -1,4 +1,3 @@
-# зависимости для разработки (ставятся поверх requirements.txt)
 -r requirements.txt
 
 pytest==9.1.1
