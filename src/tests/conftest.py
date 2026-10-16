@@ -1,3 +1,4 @@
+# flake8: noqa
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
