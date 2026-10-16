@@ -16,7 +16,6 @@ from src.schemas.posts import PostEditDTO
 from src.services.posts import PostsService
 from src.utils.exceptions import ForbiddenError, PostNotFoundError
 
-
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 
