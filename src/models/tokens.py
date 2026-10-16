@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import CommonBaseORM
@@ -9,7 +9,7 @@ from src.models.base import CommonBaseORM
 class RefreshTokenORM(CommonBaseORM):
     __tablename__ = "tokens"
 
-    hashed_data: Mapped[str]
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    hashed_data: Mapped[str] = mapped_column(String, index=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     expires_at: Mapped[datetime]
     access_jti: Mapped[str]

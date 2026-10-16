@@ -11,8 +11,12 @@ class CommentsRepo(BaseRepo):
     model = CommentORM
     schema = CommentDTO
 
-    async def get_total(self) -> int:
-        query = select(func.count(CommentORM.id)).select_from(CommentORM)
+    async def get_total(self, post_id: int) -> int:
+        query = (
+            select(func.count(CommentORM.id))
+            .select_from(CommentORM)
+            .filter(CommentORM.post_id == post_id)
+        )
         try:
             result = await self.session.execute(query)
             total = result.scalar()
