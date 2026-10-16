@@ -10,6 +10,6 @@ class RefreshTokenORM(CommonBaseORM):
     __tablename__ = "tokens"
 
     hashed_data: Mapped[str]
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     expires_at: Mapped[datetime]
     access_jti: Mapped[str]
