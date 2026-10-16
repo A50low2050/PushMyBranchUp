@@ -49,7 +49,7 @@ class UserAlreadyExistsHTTPError(ApplicationHTTPError):
 
 
 class InvalidLoginDataHTTPError(ApplicationHTTPError):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_401_UNAUTHORIZED
     error = "INVALID_LOGIN_DATA"
     detail = "Неверные логин или пароль"
 
@@ -68,7 +68,8 @@ class InvalidTokenHTTPError(ApplicationHTTPError):
 
 class WithdrawnTokenHTTPError(ApplicationHTTPError):
     detail = "Предоставленный токен отозван"
-    status_code = status.HTTP_403_FORBIDDEN
+    status_code = status.HTTP_401_UNAUTHORIZED
+    error = "UNAUTHORIZED"
 
 
 class ForbiddenHTTPError(ApplicationHTTPError):
@@ -84,6 +85,6 @@ class BadRequestHTTPError(ApplicationHTTPError):
 
 
 class DBQueryHTTPError(ApplicationHTTPError):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     error = "DB_QUERY_ERROR"
     detail = "Ошибка запроса к базе данных"

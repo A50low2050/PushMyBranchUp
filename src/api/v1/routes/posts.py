@@ -1,7 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, BackgroundTasks
+from fastapi import APIRouter, Body, Path, BackgroundTasks, status
 
+
+from src.api.v1.examples.posts import (
+    CREATE_EXAMPLES,
+    EDIT_EXAMPLES,
+    POST_ID_EXAMPLES,
+    CREATE_POST_RESPONSES,
+    GET_POSTS_RESPONSES,
+    GET_POSTS_FEED_RESPONSES,
+    GET_POST_RESPONSES,
+    EDIT_POST_RESPONSES,
+    DELETE_POST_RESPONSES,
+)
 
 from src.api.v1.dependencies.auth import GetSubDep, GetOptionalSubDep
 from src.api.v1.dependencies.db import DatabaseDep
@@ -12,7 +24,6 @@ from src.api.v1.errors import (
     ForbiddenHTTPError,
     PostNotFoundHTTPError,
 )
-from src.schemas.errors import ErrorResponseDTO
 from src.schemas.posts import (
     PostCreateDTO,
     PostDeleteResponseDTO,
@@ -30,161 +41,16 @@ from src.utils.exceptions import (
 router = APIRouter(prefix="/posts", tags=["Посты"])
 
 
-# Примеры для Swagger. На работу API не влияют.
-
-POST_EXAMPLE = {
-    "post_id": 1,
-    "user_id": 1,
-    "content": "Мой первый пост!",
-    "likes_count": 0,
-    "is_liked": False,
-    "comments_count": 0,
-    "created_at": "2026-10-13T12:00:00",
-    "updated_at": "2026-10-13T12:00:00",
-}
-
-SINGLE_POST_EXAMPLE = {
-    "data": POST_EXAMPLE,
-}
-
-POST_FEED_EXAMPLE = {
-    "page": 1,
-    "per_page": 10,
-    "total_pages": 1,
-    "data": [POST_EXAMPLE],
-}
-
-DELETE_EXAMPLE = {
-    "data": {
-        "comments": 2,
-        "likes": 5,
-        "posts": 1,
-    }
-}
-
-POST_ID_EXAMPLES = {
-    "existing": {
-        "summary": "Существующий пост",
-        "description": "Пример ID поста. Замените на существующий ID.",
-        "value": 1,
-    },
-    "missing": {
-        "summary": "Несуществующий пост",
-        "description": "Пример ID для проверки ошибки 404.",
-        "value": 999999,
-    },
-}
-
-CREATE_EXAMPLES = {
-    "valid": {
-        "summary": "Обычный пост",
-        "value": {"content": "Сегодня начал работать над новым проектом!"},
-    },
-    "short": {
-        "summary": "Короткий пост",
-        "value": {"content": "Привет!"},
-    },
-    "empty": {
-        "summary": "Ошибка: пустой текст",
-        "description": "Вызовет ошибку валидации 422.",
-        "value": {"content": ""},
-    },
-    "spaces": {
-        "summary": "Ошибка: только пробелы",
-        "description": "Вызовет ошибку валидации 422.",
-        "value": {"content": "   "},
-    },
-    "missing": {
-        "summary": "Ошибка: отсутствует content",
-        "description": "Вызовет ошибку валидации 422.",
-        "value": {},
-    },
-}
-
-EDIT_EXAMPLES = {
-    "valid": {
-        "summary": "Изменить текст",
-        "value": {"content": "Обновлённый текст поста."},
-    },
-    "empty": {
-        "summary": "Ошибка: пустой текст",
-        "value": {"content": ""},
-    },
-    "spaces": {
-        "summary": "Ошибка: только пробелы",
-        "value": {"content": "   "},
-    },
-}
-
-
-def error_response(
-    description: str,
-    error: str,
-    message: str,
-) -> dict:
-    """Документация ошибки для Swagger."""
-    return {
-        "model": ErrorResponseDTO,
-        "description": description,
-        "content": {
-            "application/json": {
-                "example": {
-                    "error": error,
-                    "message": message,
-                }
-            }
-        },
-    }
-
-
-BAD_REQUEST_RESPONSE = error_response(
-    "Ошибка запроса к базе данных",
-    "DB_QUERY_ERROR",
-    "Ошибка запроса к базе данных",
-)
-
-UNAUTHORIZED_RESPONSE = error_response(
-    "Необходим действительный access-токен",
-    "UNAUTHORIZED",
-    "Пользователь не авторизован",
-)
-
-FORBIDDEN_RESPONSE = error_response(
-    "Недостаточно прав для выполнения действия",
-    "FORBIDDEN",
-    "Доступ запрещен",
-)
-
-NOT_FOUND_RESPONSE = error_response(
-    "Пост не найден",
-    "POST_NOT_FOUND",
-    "Пост не найден",
-)
-
-VALIDATION_RESPONSE = error_response(
-    "Некорректные данные запроса",
-    "VALIDATION_ERROR",
-    "Invalid request data",
-)
-
-
 @router.post(
     "",
+    status_code=status.HTTP_201_CREATED,
     summary="Создать пост",
     description=(
         "Создаёт пост от имени авторизованного пользователя. "
         "Текст должен содержать от 1 до 2200 символов "
         "и не может состоять только из пробелов."
     ),
-    responses={
-        200: {
-            "description": "Пост создан",
-            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=CREATE_POST_RESPONSES,
 )
 async def create_post(
     data: Annotated[
@@ -220,33 +86,7 @@ async def create_post(
         "Для неавторизованных пользователей is_liked всегда false. "
         "Количество записей и смещение задаются параметрами пагинации."
     ),
-    responses={
-        200: {
-            "description": "Список постов получен",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "with_posts": {
-                            "summary": "Список с постами",
-                            "value": POST_FEED_EXAMPLE,
-                        },
-                        "empty": {
-                            "summary": "Пустой список",
-                            "value": {
-                                "page": 1,
-                                "per_page": 10,
-                                "total_pages": 0,
-                                "data": [],
-                            },
-                        },
-                    }
-                }
-            },
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=GET_POSTS_RESPONSES,
 )
 async def get_posts(
     pagination: PaginationParams,
@@ -279,33 +119,7 @@ async def get_posts(
         "Возвращает ленту постов для авторизованного пользователя. "
         "Результат разбит на страницы."
     ),
-    responses={
-        200: {
-            "description": "Лента получена",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "with_posts": {
-                            "summary": "Лента с постами",
-                            "value": POST_FEED_EXAMPLE,
-                        },
-                        "empty": {
-                            "summary": "Пустая лента",
-                            "value": {
-                                "page": 1,
-                                "per_page": 10,
-                                "total_pages": 0,
-                                "data": [],
-                            },
-                        },
-                    }
-                }
-            },
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=GET_POSTS_FEED_RESPONSES,
 )
 async def get_posts_feed(
     pagination: PaginationParams,
@@ -340,16 +154,7 @@ async def get_posts_feed(
         "Поле is_liked показывает, поставил ли текущий пользователь лайк. "
         "Для неавторизованных пользователей is_liked всегда false."
     ),
-    responses={
-        200: {
-            "description": "Пост найден",
-            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=GET_POST_RESPONSES,
 )
 async def get_post(
     post_id: Annotated[
@@ -384,26 +189,7 @@ async def get_post(
         "Новый текст должен содержать от 1 до 2200 символов "
         "и не может состоять только из пробелов."
     ),
-    responses={
-        200: {
-            "description": "Пост обновлён",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "data": {
-                            **POST_EXAMPLE,
-                            "content": "Обновлённый текст поста.",
-                        }
-                    }
-                }
-            },
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        403: FORBIDDEN_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=EDIT_POST_RESPONSES,
 )
 async def edit_post(
     post_id: Annotated[
@@ -445,17 +231,7 @@ async def edit_post(
         "В ответе возвращается количество удалённых постов, "
         "комментариев и лайков."
     ),
-    responses={
-        200: {
-            "description": "Пост удалён",
-            "content": {"application/json": {"example": DELETE_EXAMPLE}},
-        },
-        400: BAD_REQUEST_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        403: FORBIDDEN_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    },
+    responses=DELETE_POST_RESPONSES,
 )
 async def delete_post(
     post_id: Annotated[

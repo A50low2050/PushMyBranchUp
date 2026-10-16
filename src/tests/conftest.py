@@ -142,7 +142,7 @@ async def registered_user(client, register_payload):
         route_path("/auth/register"),
         json=register_payload,
     )
-    assert response.status_code == 200, response.text
+    assert response.status_code == 201, response.text
     body = response.json()
     return body["data"]
 
@@ -194,7 +194,7 @@ async def multiple_posts(client, auth_headers):
             json={"content": f"Пост номер {i} для теста пагинации"},
             headers=auth_headers,
         )
-        assert response.status_code == 200, response.text
+        assert response.status_code == 201, response.text
         posts.append(response.json()["data"])
     return posts
 
@@ -215,7 +215,7 @@ async def second_user_headers(
 ) -> dict[str, Any]:
     """Регистрирует второго пользователя и возвращает его заголовки и id."""
     reg = await client.post(route_path("/auth/register"), json=second_payload)
-    assert reg.status_code == 200, reg.text
+    assert reg.status_code == 201, reg.text
     user_id = reg.json()["data"]["id"]
 
     login = await client.post(
