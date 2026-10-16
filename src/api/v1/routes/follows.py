@@ -1,10 +1,10 @@
 from fastapi import APIRouter, BackgroundTasks
 
+from src.api.v1.examples.follows import TOGGLE_FOLLOW_RESPONSES
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import BadRequestHTTPError, UserNotFoundHTTPError
-from src.schemas.errors import ErrorResponseDTO
 from src.schemas.follows import FollowResponseDTO
 from src.services.follows import FollowsService
 from src.utils.exceptions import SelfFollowError, UserNotFoundError
@@ -35,57 +35,7 @@ router = APIRouter(
         "Для подписки и отписки используется один и тот же метод PUT."
     ),
     response_model=FollowResponseDTO,
-    responses={
-        200: {
-            "description": "Состояние подписки успешно изменено",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "follow": {
-                            "summary": "Подписка оформлена",
-                            "value": {
-                                "follower_id": 1,
-                                "followed_id": 2,
-                                "followed": True,
-                            },
-                        },
-                        "unfollow": {
-                            "summary": "Подписка отменена",
-                            "value": {
-                                "follower_id": 1,
-                                "followed_id": 2,
-                                "followed": False,
-                            },
-                        },
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Нельзя подписаться на самого себя",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь с указанным ID не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID пользователя",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=TOGGLE_FOLLOW_RESPONSES,
 )
 async def toggle_follow(
     user_id: int,

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, BackgroundTasks
 
+from src.api.v1.examples.likes import TOGGLE_LIKE_RESPONSES
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import DBQueryHTTPError, PostNotFoundHTTPError
-from src.schemas.errors import ErrorResponseDTO
 from src.schemas.likes import LikeResponseDTO
 from src.services.likes import LikesService
 from src.utils.exceptions import DBQueryError, PostNotFoundError
@@ -35,57 +35,7 @@ router = APIRouter(
         "В ответе возвращается текущее состояние лайка."
     ),
     response_model=LikeResponseDTO,
-    responses={
-        200: {
-            "description": "Состояние лайка успешно изменено",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "liked": {
-                            "summary": "Лайк поставлен",
-                            "value": {
-                                "post_id": 1,
-                                "user_id": 2,
-                                "is_liked": True,
-                            },
-                        },
-                        "unliked": {
-                            "summary": "Лайк снят",
-                            "value": {
-                                "post_id": 1,
-                                "user_id": 2,
-                                "is_liked": False,
-                            },
-                        },
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Пост с указанным ID не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID поста",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=TOGGLE_LIKE_RESPONSES,
 )
 async def toggle_like(
     post_id: int,

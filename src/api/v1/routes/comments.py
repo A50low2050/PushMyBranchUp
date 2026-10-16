@@ -1,5 +1,12 @@
 from fastapi import APIRouter, BackgroundTasks, status
 
+from src.api.v1.examples.comments import (
+    CREATE_COMMENT_RESPONSES,
+    DELETE_COMMENT_RESPONSES,
+    GET_COMMENT_RESPONSES,
+    GET_COMMENTS_RESPONSES,
+    UPDATE_COMMENT_RESPONSES,
+)
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
@@ -18,7 +25,6 @@ from src.schemas.comments import (
     CommentFeedResponseDTO,
     CommentResponseDTO,
 )
-from src.schemas.errors import ErrorResponseDTO
 from src.services.comments import CommentsService
 from src.utils.exceptions import (
     CommentNotFoundError,
@@ -47,47 +53,7 @@ router = APIRouter(
     ),
     response_model=CommentResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    responses={
-        201: {
-            "description": "Комментарий успешно создан",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "id": 1,
-                        "post_id": 10,
-                        "user_id": 2,
-                        "content": "Отличный пост! Спасибо за информацию.",
-                        "created_at": "2026-10-13T12:00:00",
-                        "updated_at": "2026-10-13T12:00:00",
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Указанный пост не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID поста или текст комментария",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=CREATE_COMMENT_RESPONSES,
 )
 async def create_comment(
     post_id: int,
@@ -133,58 +99,7 @@ async def create_comment(
         "Если комментариев нет, возвращается пустой массив `data`."
     ),
     response_model=CommentFeedResponseDTO,
-    responses={
-        200: {
-            "description": "Список комментариев успешно получен",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "page": 1,
-                        "per_page": 5,
-                        "total_pages": 1,
-                        "data": [
-                            {
-                                "id": 1,
-                                "post_id": 10,
-                                "user_id": 2,
-                                "content": "Отличный пост!",
-                                "created_at": "2026-10-13T12:00:00",
-                                "updated_at": "2026-10-13T12:00:00",
-                            },
-                            {
-                                "id": 2,
-                                "post_id": 10,
-                                "user_id": 3,
-                                "content": "Спасибо за информацию!",
-                                "created_at": "2026-10-13T12:10:00",
-                                "updated_at": "2026-10-13T12:10:00",
-                            },
-                        ],
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Указанный пост не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректные параметры пагинации или ID поста",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=GET_COMMENTS_RESPONSES,
 )
 async def get_comments(
     post_id: int,
@@ -229,43 +144,7 @@ async def get_comments(
         "ID автора, ID поста и даты создания и изменения."
     ),
     response_model=CommentResponseDTO,
-    responses={
-        200: {
-            "description": "Комментарий успешно получен",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "id": 1,
-                        "post_id": 10,
-                        "user_id": 2,
-                        "content": "Отличный пост!",
-                        "created_at": "2026-10-13T12:00:00",
-                        "updated_at": "2026-10-13T12:00:00",
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Комментарий не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID поста или комментария",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=GET_COMMENT_RESPONSES,
 )
 async def get_comment(
     post_id: int,
@@ -300,51 +179,7 @@ async def get_comment(
         "После успешного изменения возвращаются обновлённые данные комментария."
     ),
     response_model=CommentResponseDTO,
-    responses={
-        200: {
-            "description": "Комментарий успешно обновлён",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "id": 1,
-                        "post_id": 10,
-                        "user_id": 2,
-                        "content": "Обновлённый текст комментария.",
-                        "created_at": "2026-10-13T12:00:00",
-                        "updated_at": "2026-10-13T13:00:00",
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        403: {
-            "model": ErrorResponseDTO,
-            "description": "Недостаточно прав. Редактировать комментарий может только автор",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Комментарий не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID или текст комментария",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=UPDATE_COMMENT_RESPONSES,
 )
 async def update_comment(
     post_id: int,
@@ -385,42 +220,7 @@ async def update_comment(
         "в поле `data.deleted_count`."
     ),
     response_model=CommentDeleteResponseDTO,
-    responses={
-        200: {
-            "description": "Комментарий успешно удалён",
-            "content": {
-                "application/json": {"example": {"data": {"deleted_count": 1}}}
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        403: {
-            "model": ErrorResponseDTO,
-            "description": "Недостаточно прав. Удалить комментарий может только автор",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Комментарий не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID поста или комментария",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=DELETE_COMMENT_RESPONSES,
 )
 async def delete_comment(
     post_id: int,
