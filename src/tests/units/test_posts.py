@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -14,6 +15,11 @@ from src.models.users import UserORM
 from src.schemas.posts import PostEditDTO
 from src.services.posts import PostsService
 from src.utils.exceptions import ForbiddenError, PostNotFoundError
+
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestUnhandledThreadExceptionWarning"
+)
+
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
