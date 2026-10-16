@@ -169,7 +169,7 @@ class TestPagination:
         assert response.status_code == 200, response.text
 
         body = response.json()
-        assert body["page"] == 2 
+        assert body["page"] == 2
         assert len(body["data"]) == 2
 
     async def test_pages_do_not_overlap(self, client, auth_headers, multiple_posts):
@@ -202,4 +202,8 @@ class TestPagination:
     async def test_pagination_unauthorized(self, client):
         """GET /v1/posts без токена возвращает 200."""
         response = await client.get("/v1/posts")
+<<<<<<< HEAD
         assert response.status_code == 200
+=======
+        assert response.status_code == 401
+>>>>>>> main

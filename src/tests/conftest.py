@@ -1,3 +1,4 @@
+# flake8: noqa
 """Общий конфиг тестирования для FastAPI + async SQLAlchemy проекта."""
 
 import os
@@ -18,11 +19,11 @@ os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PASSWORD", "test-password-12345
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL", "noreply@test.local")
 
 
-
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
+from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -34,11 +35,9 @@ from src.api.v1.dependencies.cache import get_cache
 from src.api.v1.dependencies.db import get_db
 from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
-from src.models.base import BaseORM
-from src.utils.cacheserv import InMemoryAsyncCacheService
 from unittest.mock import MagicMock
 
-
+# Регистрируем все таблицы в metadata
 from src.models import (  # noqa: F401
     comments,
     likes,
@@ -47,8 +46,14 @@ from src.models import (  # noqa: F401
     tokens,
     users,
 )
+from src.models.base import BaseORM
+from src.utils.cacheserv import InMemoryAsyncCacheService
 
-test_engine = create_async_engine(os.environ["ENV_DATABASE__URL"], echo=False)
+test_engine = create_async_engine(
+    os.environ["ENV_DATABASE__URL"],
+    echo=False,
+    poolclass=NullPool,
+)
 
 event.listens_for(test_engine.sync_engine, "connect")(enable_sqlite_foreign_keys)
 
@@ -77,8 +82,6 @@ async def _setup_database():
         await conn.run_sync(BaseORM.metadata.create_all)
     yield
     await test_engine.dispose()
-    if os.path.exists(TEST_DB_FILE):
-        os.remove(TEST_DB_FILE)
 
 
 @pytest_asyncio.fixture(autouse=True)

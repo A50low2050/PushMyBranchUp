@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Annotated
 
 import jwt
@@ -10,6 +11,7 @@ from fastapi.security import (
 from src.api.v1.dependencies.cache import CacheDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.errors import (
+    ExpiredTokenHTTPError,
     InvalidTokenHTTPError,
     UnauthorizedHTTPError,
     WithdrawnTokenHTTPError,
@@ -96,7 +98,7 @@ class OptionalAccessTokenResolver:
 class RefreshTokenResolver:
     @staticmethod
     def _get_refresh_token(request: Request) -> str:
-        cookie = settings.auth.refresh_token_cookie_name
+        cookie = settings.cookie.key
         token = request.cookies.get(cookie)
         if not token:
             raise UnauthorizedHTTPError("Отсутствует Refresh токен в cookie")
@@ -110,6 +112,12 @@ class RefreshTokenResolver:
         hashed_refresh_t = HashService.hash_data(refresh_t)
         try:
             token = await TokenService(db).get_refresh_token(hashed_refresh_t)
+            current_time = datetime.now(UTC).replace(tzinfo=None)
+            if token.expires_at <= current_time:
+                raise ExpiredTokenHTTPError(
+                    "Refresh токен устарел, пройдите авторизацию заново"
+                )
+
         except ObjectNotFoundError as exc:
             raise WithdrawnTokenHTTPError("Refresh токен отозван") from exc
         return token

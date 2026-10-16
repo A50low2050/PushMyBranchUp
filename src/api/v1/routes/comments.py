@@ -104,6 +104,7 @@ async def create_comment(
 async def get_comments(
     post_id: int,
     pagination: PaginationParams,
+    _: GetSubDep,
     db: DatabaseDep,
 ) -> CommentFeedResponseDTO:
     try:
@@ -148,6 +149,7 @@ async def get_comments(
 async def get_comment(
     post_id: int,
     comment_id: int,
+    _: GetSubDep,
     db: DatabaseDep,
 ) -> CommentResponseDTO:
     try:

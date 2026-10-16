@@ -13,7 +13,11 @@ if TYPE_CHECKING:
 
 class PostORM(CommonBaseORM):
     __tablename__ = "posts"
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
     author: Mapped["UserORM"] = relationship(
         back_populates="posts",
     )

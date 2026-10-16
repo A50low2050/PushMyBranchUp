@@ -17,11 +17,12 @@ class CommentORM(CommonBaseORM):
         nullable=False,
     )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     post_id: Mapped[int] = mapped_column(
-        ForeignKey("posts.id"),
+        ForeignKey("posts.id", ondelete="CASCADE"),
+        index=True,
         nullable=False,
     )
     author: Mapped["UserORM"] = relationship(

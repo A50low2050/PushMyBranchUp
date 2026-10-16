@@ -118,12 +118,8 @@ class PostsService(BaseService):
         if post.user_id != user_id:
             raise ForbiddenError
 
-        coms_deleted_count = await self.db.comments.delete(
-            post_id=post_id,
-        )
-        likes_deleted_count = await self.db.likes.delete(
-            post_id=post_id,
-        )
+        coms_deleted_count = await self.db.comments.get_total(post_id=post_id)
+        likes_deleted_count = await self.db.likes.get_total(post_id=post_id)
         posts_deleted_count = await self.db.posts.delete(
             id=post_id,
         )

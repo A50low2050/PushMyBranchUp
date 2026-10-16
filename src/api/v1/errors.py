@@ -88,3 +88,8 @@ class DBQueryHTTPError(ApplicationHTTPError):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     error = "DB_QUERY_ERROR"
     detail = "Ошибка запроса к базе данных"
+
+
+class ExpiredTokenHTTPError(ApplicationHTTPError):
+    detail = "Токен устарел"
+    status_code = status.HTTP_401_UNAUTHORIZED

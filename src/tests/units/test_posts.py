@@ -1,8 +1,11 @@
 import asyncio
 
 import pytest
+
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
 from src.models.base import BaseORM
 from src.models.comments import CommentORM
@@ -13,12 +16,18 @@ from src.schemas.posts import PostEditDTO
 from src.services.posts import PostsService
 from src.utils.exceptions import ForbiddenError, PostNotFoundError
 
+pytestmark = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestUnhandledThreadExceptionWarning"
+)
+
+
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 
 async def _prepare_db() -> DBManager:
     """Создаёт таблицы в памяти и возвращает DBManager с тестовыми данными."""
     engine = create_async_engine(TEST_DB_URL)
+    event.listen(engine.sync_engine, "connect", enable_sqlite_foreign_keys)
     async with engine.begin() as conn:
         await conn.run_sync(BaseORM.metadata.create_all)
 
