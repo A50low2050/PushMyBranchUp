@@ -6,7 +6,7 @@ from src.schemas.likes import LikeAddDTO, LikeResponseDTO
 from src.schemas.posts import PostDTO
 from src.schemas.users import UserDTO
 from src.services.base import BaseService
-from src.utils.exceptions import PostNotFoundError
+from src.utils.exceptions import ObjectAlreadyExistsError, PostNotFoundError
 from src.utils.notiserv import EmailMessage, NotificationService
 
 
@@ -31,9 +31,16 @@ class LikesService(BaseService):
         )
 
         if like is None:
-            data = LikeAddDTO(user_id=user_id, post_id=post_id)
-            await self.db.likes.add(data)
-            is_liked = True
+            try:
+                data = LikeAddDTO(user_id=user_id, post_id=post_id)
+                await self.db.likes.add(data)
+                is_liked = True
+            except ObjectAlreadyExistsError:
+                like = await self.db.likes.get_one_or_none(
+                    user_id=user_id,
+                    post_id=post_id,
+                )
+                is_liked = like is not None
         else:
             await self.db.likes.delete(
                 user_id=user_id,

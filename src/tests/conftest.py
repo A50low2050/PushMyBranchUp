@@ -23,6 +23,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
+from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -48,7 +49,11 @@ from src.models import (  # noqa: F401
     users,
 )
 
-test_engine = create_async_engine(os.environ["ENV_DATABASE__URL"], echo=False)
+test_engine = create_async_engine(
+    os.environ["ENV_DATABASE__URL"],
+    echo=False,
+    poolclass=NullPool,
+)
 
 event.listens_for(test_engine.sync_engine, "connect")(enable_sqlite_foreign_keys)
 
@@ -77,8 +82,6 @@ async def _setup_database():
         await conn.run_sync(BaseORM.metadata.create_all)
     yield
     await test_engine.dispose()
-    if os.path.exists(TEST_DB_FILE):
-        os.remove(TEST_DB_FILE)
 
 
 @pytest_asyncio.fixture(autouse=True)
