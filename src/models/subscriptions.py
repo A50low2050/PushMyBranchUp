@@ -19,11 +19,11 @@ class SubscriptionORM(CommonBaseORM):
         ),
     )
     follower_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     followed_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     follower: Mapped["UserORM"] = relationship(
