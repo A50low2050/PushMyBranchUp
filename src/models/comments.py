@@ -22,6 +22,7 @@ class CommentORM(CommonBaseORM):
     )
     post_id: Mapped[int] = mapped_column(
         ForeignKey("posts.id", ondelete="CASCADE"),
+        index=True,
         nullable=False,
     )
     author: Mapped["UserORM"] = relationship(
