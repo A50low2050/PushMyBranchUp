@@ -74,6 +74,14 @@ class BaseRepo:
             return None
         return self.schema.model_validate(obj)
 
+    async def exists(self, *filter, **filter_by) -> bool:
+        query = select(select(self.model.id).filter(*filter).filter_by(**filter_by).exists())
+        try:
+            result = await self.session.execute(query)
+            return bool(result.scalar())
+        except (StatementError, DBAPIError) as exc:
+            raise DBQueryError from exc
+
     async def add_bulk(self, data: Sequence[BaseDTO]) -> list[BaseDTO]:
         add_obj_stmt = (
             insert(self.model)

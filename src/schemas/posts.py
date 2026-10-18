@@ -71,9 +71,8 @@ class SinglePostResponseDTO(BaseDTO):
 
 
 class PostDeleteResultDTO(BaseDTO):
-    comments: int = Field(description="Количество удалённых комментариев")
-    likes: int = Field(description="Количество удалённых лайков")
-    posts: int = Field(description="Количество удалённых постов")
+    post_id: int = Field(description="ID удалённого поста")
+    deleted: bool = Field(default=True, description="Флаг успешного удаления")
 
 
 class PostDeleteResponseDTO(BaseDTO):

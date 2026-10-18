@@ -33,10 +33,6 @@ class FollowsService(BaseService):
         if followed_user is None:
             raise UserNotFoundError
 
-        follower_user = cast(
-            UserDTO | None, await self.db.users.get_one_or_none(id=follower_id)
-        )
-
         subscription = await self.db.subscriptions.get_one_or_none(
             follower_id=follower_id,
             followed_id=followed_id,
@@ -69,6 +65,10 @@ class FollowsService(BaseService):
 
         if not follow_resp.followed:
             return follow_resp
+
+        follower_user = cast(
+            UserDTO | None, await self.db.users.get_one_or_none(id=follower_id)
+        )
 
         if follower_user is None:
             logger.warning(

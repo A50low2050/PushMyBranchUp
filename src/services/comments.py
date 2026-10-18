@@ -51,29 +51,32 @@ class CommentsService(BaseService):
             updated_at=result.updated_at,
         )
 
-        author = cast(
-            UserDTO | None,
-            await self.db.users.get_one_or_none(id=post.user_id),
-        )
-        if author is not None and author.id != user_id:
-            background_tasks.add_task(
-                notifications.notify,
-                [
-                    EmailMessage(
-                        recipient_email=author.email,
-                        subject="Новый комментарий на вашем посте",
-                        body=f"На ваш пост #{post_id} оставили комментарий.",
-                    )
-                ],
+        if post.user_id != user_id:
+            author = cast(
+                UserDTO | None,
+                await self.db.users.get_one_or_none(id=post.user_id),
             )
+            if author is not None:
+                background_tasks.add_task(
+                    notifications.notify,
+                    [
+                        EmailMessage(
+                            recipient_email=author.email,
+                            subject="Новый комментарий на вашем посте",
+                            body=f"На ваш пост #{post_id} оставили комментарий.",
+                        )
+                    ],
+                )
 
         return comment_resp
 
     async def get_comments(
-        self, post_id: int, limit: int, offset: int
+        self,
+        post_id: int,
+        limit: int,
+        offset: int,
     ) -> list[CommentResponseDTO]:
-        post = await self.db.posts.get_one_or_none(id=post_id)
-        if post is None:
+        if not await self.db.posts.exists(id=post_id):
             raise PostNotFoundError
 
         comments = await self.db.comments.get_all_filtered(
@@ -84,18 +87,22 @@ class CommentsService(BaseService):
         return [CommentResponseDTO.model_validate(c) for c in comments]
 
     async def get_comments_with_count(
-        self, post_id: int, limit: int, offset: int
+        self,
+        post_id: int,
+        limit: int,
+        offset: int,
     ) -> tuple[list[CommentResponseDTO], int]:
-        post = await self.db.posts.get_one_or_none(id=post_id)
-        if post is None:
-            raise PostNotFoundError
+        total_count = await self.db.comments.get_total(post_id=post_id)
+        if total_count == 0:
+            if not await self.db.posts.exists(id=post_id):
+                raise PostNotFoundError
+            return [], 0
 
         comments = await self.db.comments.get_all_filtered(
             post_id=post_id,
             limit=limit,
             offset=offset,
         )
-        total_count = await self.db.comments.get_total(post_id=post_id)
         return [CommentResponseDTO.model_validate(c) for c in comments], total_count
 
     async def get_comment(

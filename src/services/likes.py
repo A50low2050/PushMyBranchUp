@@ -56,11 +56,11 @@ class LikesService(BaseService):
             is_liked=is_liked,
         )
 
-        if not like_resp.is_liked:
+        if not like_resp.is_liked or post.user_id == user_id:
             return like_resp
 
         author = cast(UserDTO, await self.db.users.get_one_or_none(id=post.user_id))
-        if author is not None and author.id != user_id:
+        if author is not None:
             background_tasks.add_task(
                 notifications.notify,
                 [

@@ -56,9 +56,8 @@ POST_FEED_EXAMPLE = {
 
 DELETE_EXAMPLE = {
     "data": {
-        "comments": 2,
-        "likes": 5,
-        "posts": 1,
+        "post_id": 1,
+        "deleted": True,
     }
 }
 
@@ -435,9 +434,7 @@ async def edit_post(
     summary="Удалить пост",
     description=(
         "Удаляет пост по ID. "
-        "Удалить пост может только его автор. "
-        "В ответе возвращается количество удалённых постов, "
-        "комментариев и лайков."
+        "Удалить пост может только его автор."
     ),
     responses={
         200: {

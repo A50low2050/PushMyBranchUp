@@ -24,6 +24,7 @@ class SubscriptionORM(CommonBaseORM):
     )
     followed_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
         nullable=False,
     )
     follower: Mapped["UserORM"] = relationship(

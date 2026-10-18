@@ -110,25 +110,14 @@ class PostsService(BaseService):
         return posts, total
 
     async def delete_post(self, post_id: int, user_id: int) -> PostDeleteResultDTO:
-        try:
-            post = cast(PostDTO, await self.db.posts.get_one(id=post_id))
-        except ObjectNotFoundError as exc:
-            raise PostNotFoundError(str(exc)) from exc
-
-        if post.user_id != user_id:
+        deleted_count = await self.db.posts.delete(id=post_id, user_id=user_id)
+        if not deleted_count:
+            if not await self.db.posts.exists(id=post_id):
+                raise PostNotFoundError
             raise ForbiddenError
 
-        coms_deleted_count = await self.db.comments.get_total(post_id=post_id)
-        likes_deleted_count = await self.db.likes.get_total(post_id=post_id)
-        posts_deleted_count = await self.db.posts.delete(
-            id=post_id,
-        )
         await self.db.commit()
-        return PostDeleteResultDTO(
-            comments=coms_deleted_count,
-            likes=likes_deleted_count,
-            posts=posts_deleted_count,
-        )
+        return PostDeleteResultDTO(post_id=post_id, deleted=True)
 
     async def edit_post(
         self,
