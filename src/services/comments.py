@@ -10,6 +10,7 @@ from src.schemas.comments import (
     CommentResponseDTO,
 )
 from src.schemas.posts import PostDTO
+from src.schemas.tokens import AccessTokenPayloadDTO
 from src.schemas.users import UserDTO
 from src.services.base import BaseService
 from src.utils.exceptions import (
@@ -29,6 +30,7 @@ class CommentsService(BaseService):
         data: CommentCreateDTO,
         notifications: NotificationService,
         background_tasks: BackgroundTasks,
+        payload: AccessTokenPayloadDTO,
     ) -> CommentResponseDTO:
         post = cast(PostDTO | None, await self.db.posts.get_one_or_none(id=post_id))
         if post is None:
@@ -51,22 +53,38 @@ class CommentsService(BaseService):
             updated_at=result.updated_at,
         )
 
-        if post.user_id != user_id:
-            author = cast(
-                UserDTO | None,
-                await self.db.users.get_one_or_none(id=post.user_id),
-            )
-            if author is not None:
-                background_tasks.add_task(
-                    notifications.notify,
-                    [
-                        EmailMessage(
-                            recipient_email=author.email,
-                            subject="Новый комментарий на вашем посте",
-                            body=f"На ваш пост #{post_id} оставили комментарий.",
-                        )
-                    ],
+        if post.user_id == user_id:
+            return comment_resp
+
+        author = cast(
+            UserDTO | None,
+            await self.db.users.get_one_or_none(id=post.user_id),
+        )
+        if author is None:
+            return comment_resp
+
+        username = payload.username
+        post_snippet = (
+            f"'{post.content[:25]}...'"
+            if len(post.content) > 25
+            else f"'{post.content}'"
+        )
+        body = (
+            f"На ваш пост #{post.id} {post_snippet} оставили комментарий!\n\n"
+            f"Пользователь {username} пишет:\n\n"
+            f"«{result.content}»"
+        )
+
+        background_tasks.add_task(
+            notifications.notify,
+            [
+                EmailMessage(
+                    recipient_email=author.email,
+                    subject=f"Новый комментарий на вашем посте #{post.id}",
+                    body=body,
                 )
+            ],
+        )
 
         return comment_resp
 

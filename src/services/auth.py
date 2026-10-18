@@ -5,11 +5,13 @@ import jwt
 
 from src.config import settings
 from src.schemas.tokens import (
+    AccessTokenPayloadDTO,
     CreatedAccessToken,
     CreatedRefreshTokenDTO,
     IssuedTokens,
     RefreshTokenCreateDTO,
     RefreshTokenDTO,
+    UserPayloadDTO,
 )
 from src.schemas.users import UserDTO
 from src.services.base import BaseService
@@ -19,20 +21,24 @@ from src.utils.hashserv import HashService
 
 class TokenService(BaseService):
     @classmethod
-    def create_access_token(cls, payload: dict) -> CreatedAccessToken:
+    def create_access_token(cls, payload: UserPayloadDTO) -> CreatedAccessToken:
         token_data = payload.copy()
         now = datetime.now(UTC)
         expires = now + settings.auth.access_token_expire_delta
         expires_timestamp = datetime.timestamp(expires)
-
         jti = uuid.uuid4().hex
-        token_data["jti"] = jti
 
-        token_data["exp"] = expires_timestamp
-        token_data["iat"] = datetime.timestamp(now)
+        token_data = AccessTokenPayloadDTO(
+            sub=payload.sub,
+            email=payload.email,
+            username=payload.username,
+            jti=jti,
+            exp=expires_timestamp,
+            iat=datetime.timestamp(now),
+        )
 
         token = jwt.encode(
-            payload=token_data,
+            payload=token_data.model_dump(),
             key=settings.auth.secret_key.get_secret_value(),
             algorithm=settings.auth.algorithm,
         )
@@ -94,8 +100,11 @@ class TokenService(BaseService):
         user: UserDTO,
         cache: AsyncCacheServiceBase,
     ) -> IssuedTokens:
-
-        payload = {"sub": str(user.id)}
+        payload = UserPayloadDTO(
+            sub=str(user.id),
+            username=user.username,
+            email=user.email,
+        )
         access_t = self.create_access_token(payload=payload)
         refresh_t = self.create_refresh_token()
 

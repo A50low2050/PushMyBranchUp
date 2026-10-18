@@ -10,6 +10,7 @@ from src.schemas.posts import (
     PostEditDTO,
     PostResponseDTO,
 )
+from src.schemas.tokens import AccessTokenPayloadDTO
 from src.services.base import BaseService
 from src.utils.exceptions import (
     ForbiddenError,
@@ -26,6 +27,7 @@ class PostsService(BaseService):
         user_id: int,
         notifications: NotificationService,
         background_tasks: BackgroundTasks,
+        payload: AccessTokenPayloadDTO,
     ) -> PostResponseDTO:
         post = PostAddDTO(
             user_id=user_id,
@@ -52,16 +54,26 @@ class PostsService(BaseService):
         if not follower_emails:
             return post_resp
 
+        author_name = payload.username
+        subject = f"Новая публикация от {author_name}"
+        post_snippet = (
+            f"«{post_resp.content[:100]}...»"
+            if len(post_resp.content) > 100
+            else f"«{post_resp.content}»"
+        )
+        body = (
+            f"Пользователь {author_name}, на которого вы подписаны, "
+            f"опубликовал новый пост #{post_resp.post_id}:\n\n"
+            f"{post_snippet}"
+        )
+
         background_tasks.add_task(
             notifications.notify,
             [
                 EmailMessage(
                     recipient_email=email,
-                    subject="Новая публикация",
-                    body=(
-                        "Пользователь, на которого вы подписаны, "
-                        f"опубликовал новый пост #{post_resp.post_id}."
-                    ),
+                    subject=subject,
+                    body=body,
                 )
                 for email in follower_emails
             ],
