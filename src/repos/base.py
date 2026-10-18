@@ -75,7 +75,9 @@ class BaseRepo:
         return self.schema.model_validate(obj)
 
     async def exists(self, *filter, **filter_by) -> bool:
-        query = select(select(self.model.id).filter(*filter).filter_by(**filter_by).exists())
+        query = select(
+            select(self.model.id).filter(*filter).filter_by(**filter_by).exists()
+        )
         try:
             result = await self.session.execute(query)
             return bool(result.scalar())

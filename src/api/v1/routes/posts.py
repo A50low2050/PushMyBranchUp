@@ -434,10 +434,7 @@ async def edit_post(
 @router.delete(
     "/{post_id}",
     summary="Удалить пост",
-    description=(
-        "Удаляет пост по ID. "
-        "Удалить пост может только его автор."
-    ),
+    description=("Удаляет пост по ID. " "Удалить пост может только его автор."),
     responses={
         200: {
             "description": "Пост удалён",
