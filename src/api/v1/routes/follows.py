@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks
 
-from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.auth import GetAccessTokenPayloadDep, GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import BadRequestHTTPError, UserNotFoundHTTPError
@@ -90,6 +90,7 @@ router = APIRouter(
 async def toggle_follow(
     user_id: int,
     sub: GetSubDep,
+    payload: GetAccessTokenPayloadDep,
     db: DatabaseDep,
     notifications: NotificationsDep,
     background_tasks: BackgroundTasks,
@@ -98,6 +99,7 @@ async def toggle_follow(
         result = await FollowsService(db).toggle_follow(
             followed_id=user_id,
             follower_id=sub,
+            payload=payload,
             notifications=notifications,
             background_tasks=background_tasks,
         )

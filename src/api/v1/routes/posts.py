@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Path, BackgroundTasks
 
 
-from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.auth import GetAccessTokenPayloadDep, GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
@@ -56,9 +56,8 @@ POST_FEED_EXAMPLE = {
 
 DELETE_EXAMPLE = {
     "data": {
-        "comments": 2,
-        "likes": 5,
-        "posts": 1,
+        "post_id": 1,
+        "deleted": True,
     }
 }
 
@@ -192,6 +191,7 @@ async def create_post(
         Body(openapi_examples=CREATE_EXAMPLES),
     ],
     user_id: GetSubDep,
+    payload: GetAccessTokenPayloadDep,
     db: DatabaseDep,
     notifications: NotificationsDep,
     background_tasks: BackgroundTasks,
@@ -200,6 +200,7 @@ async def create_post(
         post = await PostsService(db).create_post(
             data=data,
             user_id=user_id,
+            payload=payload,
             notifications=notifications,
             background_tasks=background_tasks,
         )
@@ -433,12 +434,7 @@ async def edit_post(
 @router.delete(
     "/{post_id}",
     summary="Удалить пост",
-    description=(
-        "Удаляет пост по ID. "
-        "Удалить пост может только его автор. "
-        "В ответе возвращается количество удалённых постов, "
-        "комментариев и лайков."
-    ),
+    description=("Удаляет пост по ID. " "Удалить пост может только его автор."),
     responses={
         200: {
             "description": "Пост удалён",

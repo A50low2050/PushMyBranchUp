@@ -114,9 +114,8 @@ def test_delete_post_success() -> None:
         service = PostsService(db)
 
         result = await service.delete_post(post_id=1, user_id=1)
-        assert result.posts == 1
-        assert result.comments == 1
-        assert result.likes == 1
+        assert result.post_id == 1
+        assert result.deleted is True
 
         post = await db.posts.get_one_or_none(id=1)
         assert post is None
