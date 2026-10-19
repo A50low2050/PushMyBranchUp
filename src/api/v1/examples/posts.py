@@ -1,3 +1,5 @@
+from typing import Any
+
 from src.api.v1.examples.common import error_response
 
 POST_EXAMPLE = {
@@ -116,7 +118,7 @@ VALIDATION_RESPONSE = error_response(
 )
 
 
-CREATE_POST_RESPONSES = {
+CREATE_POST_RESPONSES: dict[int | str, dict[str, Any]] = {
     201: {
         "description": "Пост создан",
         "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
@@ -127,7 +129,7 @@ CREATE_POST_RESPONSES = {
 }
 
 
-GET_POSTS_RESPONSES = {
+GET_POSTS_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Список постов получен",
         "content": {
@@ -156,7 +158,7 @@ GET_POSTS_RESPONSES = {
 }
 
 
-GET_POSTS_FEED_RESPONSES = {
+GET_POSTS_FEED_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Лента получена",
         "content": {
@@ -185,7 +187,7 @@ GET_POSTS_FEED_RESPONSES = {
 }
 
 
-GET_POST_RESPONSES = {
+GET_POST_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Пост найден",
         "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
@@ -197,7 +199,7 @@ GET_POST_RESPONSES = {
 }
 
 
-EDIT_POST_RESPONSES = {
+EDIT_POST_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Пост обновлён",
         "content": {
@@ -219,7 +221,7 @@ EDIT_POST_RESPONSES = {
 }
 
 
-DELETE_POST_RESPONSES = {
+DELETE_POST_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Пост удалён",
         "content": {"application/json": {"example": DELETE_EXAMPLE}},

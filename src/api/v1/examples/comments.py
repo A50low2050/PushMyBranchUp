@@ -1,6 +1,8 @@
+from typing import Any
+
 from src.schemas.errors import ErrorResponseDTO
 
-CREATE_COMMENT_RESPONSES = {
+CREATE_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
     201: {
         "description": "Комментарий успешно создан",
         "content": {
@@ -59,7 +61,7 @@ CREATE_COMMENT_RESPONSES = {
 }
 
 
-GET_COMMENTS_RESPONSES = {
+GET_COMMENTS_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Список комментариев успешно получен",
         "content": {
@@ -129,7 +131,7 @@ GET_COMMENTS_RESPONSES = {
 }
 
 
-GET_COMMENT_RESPONSES = {
+GET_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Комментарий успешно получен",
         "content": {
@@ -184,7 +186,7 @@ GET_COMMENT_RESPONSES = {
 }
 
 
-UPDATE_COMMENT_RESPONSES = {
+UPDATE_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Комментарий успешно обновлён",
         "content": {
@@ -255,7 +257,7 @@ UPDATE_COMMENT_RESPONSES = {
 }
 
 
-DELETE_COMMENT_RESPONSES = {
+DELETE_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Комментарий успешно удалён",
         "content": {"application/json": {"example": {"data": {"deleted_count": 1}}}},

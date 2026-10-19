@@ -1,6 +1,8 @@
+from typing import Any
+
 from src.schemas.errors import ErrorResponseDTO
 
-GET_USERS_RESPONSES = {
+GET_USERS_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Список пользователей успешно получен",
         "content": {
@@ -60,7 +62,7 @@ GET_USERS_RESPONSES = {
 }
 
 
-GET_USER_RESPONSES = {
+GET_USER_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Пользователь успешно найден",
         "content": {

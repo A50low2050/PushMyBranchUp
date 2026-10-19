@@ -1,6 +1,8 @@
+from typing import Any
+
 from src.schemas.errors import ErrorResponseDTO
 
-TOGGLE_FOLLOW_RESPONSES = {
+TOGGLE_FOLLOW_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Состояние подписки успешно изменено",
         "content": {

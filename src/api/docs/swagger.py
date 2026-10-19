@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable, Coroutine
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
@@ -9,7 +9,7 @@ from src.api.docs.swagger_assets import SWAGGER_CSS, SWAGGER_JS
 from src.api.docs.errors import add_error_examples
 
 
-def create_custom_openapi(app: FastAPI):
+def create_custom_openapi(app: FastAPI) -> Callable[[], dict[str, Any]]:
     def custom_openapi() -> dict[str, Any]:
         if app.openapi_schema is not None:
             return app.openapi_schema
@@ -43,7 +43,9 @@ def create_custom_openapi(app: FastAPI):
     return custom_openapi
 
 
-def create_custom_swagger_ui(app: FastAPI):
+def create_custom_swagger_ui(
+    app: FastAPI,
+) -> Callable[[], Coroutine[Any, Any, HTMLResponse]]:
     async def custom_swagger_ui() -> HTMLResponse:
         response = get_swagger_ui_html(
             openapi_url=f"{app.root_path}{app.openapi_url}",

@@ -1,6 +1,8 @@
+from typing import Any
+
 from src.schemas.errors import ErrorResponseDTO
 
-TOGGLE_LIKE_RESPONSES = {
+TOGGLE_LIKE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Состояние лайка успешно изменено",
         "content": {

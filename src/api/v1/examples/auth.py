@@ -1,6 +1,8 @@
+from typing import Any
+
 from src.schemas.errors import ErrorResponseDTO
 
-GET_ME_RESPONSES = {
+GET_ME_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Данные пользователя получены",
         "content": {
@@ -32,7 +34,7 @@ GET_ME_RESPONSES = {
 }
 
 
-REGISTER_RESPONSES = {
+REGISTER_RESPONSES: dict[int | str, dict[str, Any]] = {
     201: {
         "description": "Пользователь успешно зарегистрирован",
         "content": {
@@ -88,7 +90,7 @@ REGISTER_RESPONSES = {
 }
 
 
-LOGIN_RESPONSES = {
+LOGIN_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Вход выполнен успешно",
         "content": {
@@ -140,7 +142,7 @@ LOGIN_RESPONSES = {
 }
 
 
-REFRESH_TOKEN_RESPONSES = {
+REFRESH_TOKEN_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Токены успешно обновлены",
         "content": {
@@ -184,7 +186,7 @@ REFRESH_TOKEN_RESPONSES = {
 }
 
 
-LOGOUT_RESPONSES = {
+LOGOUT_RESPONSES: dict[int | str, dict[str, Any]] = {
     204: {
         "description": "Выход выполнен успешно. Тело ответа отсутствует.",
     },
@@ -207,7 +209,7 @@ LOGOUT_RESPONSES = {
 }
 
 
-UPDATE_ME_RESPONSES = {
+UPDATE_ME_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {
         "description": "Имя пользователя успешно изменено",
         "content": {
