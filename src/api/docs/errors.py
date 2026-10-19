@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import Any
 
-
 ERROR_EXAMPLES: dict[str, dict[str, str]] = {
     "400": {
         "error": "HTTP_ERROR",

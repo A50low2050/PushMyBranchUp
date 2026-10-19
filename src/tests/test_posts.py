@@ -202,8 +202,4 @@ class TestPagination:
     async def test_pagination_unauthorized(self, client):
         """GET /v1/posts без токена возвращает 200."""
         response = await client.get("/v1/posts")
-<<<<<<< HEAD
         assert response.status_code == 200
-=======
-        assert response.status_code == 401
->>>>>>> main

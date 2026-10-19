@@ -1,6 +1,5 @@
 from src.api.v1.examples.common import error_response
 
-
 POST_EXAMPLE = {
     "post_id": 1,
     "user_id": 1,
@@ -118,117 +117,116 @@ VALIDATION_RESPONSE = error_response(
 
 
 CREATE_POST_RESPONSES = {
-        201: {
-            "description": "Пост создан",
-            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
-        },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
-
+    201: {
+        "description": "Пост создан",
+        "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}
 
 
 GET_POSTS_RESPONSES = {
-        200: {
-            "description": "Список постов получен",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "with_posts": {
-                            "summary": "Список с постами",
-                            "value": POST_FEED_EXAMPLE,
+    200: {
+        "description": "Список постов получен",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "with_posts": {
+                        "summary": "Список с постами",
+                        "value": POST_FEED_EXAMPLE,
+                    },
+                    "empty": {
+                        "summary": "Пустой список",
+                        "value": {
+                            "page": 1,
+                            "per_page": 10,
+                            "total_pages": 0,
+                            "data": [],
                         },
-                        "empty": {
-                            "summary": "Пустой список",
-                            "value": {
-                                "page": 1,
-                                "per_page": 10,
-                                "total_pages": 0,
-                                "data": [],
-                            },
-                        },
-                    }
+                    },
                 }
-            },
+            }
         },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}
 
 
 GET_POSTS_FEED_RESPONSES = {
-        200: {
-            "description": "Лента получена",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "with_posts": {
-                            "summary": "Лента с постами",
-                            "value": POST_FEED_EXAMPLE,
+    200: {
+        "description": "Лента получена",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "with_posts": {
+                        "summary": "Лента с постами",
+                        "value": POST_FEED_EXAMPLE,
+                    },
+                    "empty": {
+                        "summary": "Пустая лента",
+                        "value": {
+                            "page": 1,
+                            "per_page": 10,
+                            "total_pages": 0,
+                            "data": [],
                         },
-                        "empty": {
-                            "summary": "Пустая лента",
-                            "value": {
-                                "page": 1,
-                                "per_page": 10,
-                                "total_pages": 0,
-                                "data": [],
-                            },
-                        },
-                    }
+                    },
                 }
-            },
+            }
         },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}
 
 
 GET_POST_RESPONSES = {
-        200: {
-            "description": "Пост найден",
-            "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
-        },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
+    200: {
+        "description": "Пост найден",
+        "content": {"application/json": {"example": SINGLE_POST_EXAMPLE}},
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    404: NOT_FOUND_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}
 
 
 EDIT_POST_RESPONSES = {
-        200: {
-            "description": "Пост обновлён",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "data": {
-                            **POST_EXAMPLE,
-                            "content": "Обновлённый текст поста.",
-                        }
+    200: {
+        "description": "Пост обновлён",
+        "content": {
+            "application/json": {
+                "example": {
+                    "data": {
+                        **POST_EXAMPLE,
+                        "content": "Обновлённый текст поста.",
                     }
                 }
-            },
+            }
         },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        403: FORBIDDEN_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    403: FORBIDDEN_RESPONSE,
+    404: NOT_FOUND_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}
 
 
 DELETE_POST_RESPONSES = {
-        200: {
-            "description": "Пост удалён",
-            "content": {"application/json": {"example": DELETE_EXAMPLE}},
-        },
-        500: DB_ERROR_RESPONSE,
-        401: UNAUTHORIZED_RESPONSE,
-        403: FORBIDDEN_RESPONSE,
-        404: NOT_FOUND_RESPONSE,
-        422: VALIDATION_RESPONSE,
-    }
+    200: {
+        "description": "Пост удалён",
+        "content": {"application/json": {"example": DELETE_EXAMPLE}},
+    },
+    500: DB_ERROR_RESPONSE,
+    401: UNAUTHORIZED_RESPONSE,
+    403: FORBIDDEN_RESPONSE,
+    404: NOT_FOUND_RESPONSE,
+    422: VALIDATION_RESPONSE,
+}

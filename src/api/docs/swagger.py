@@ -21,7 +21,9 @@ def create_custom_openapi(app: FastAPI):
             routes=app.routes,
         )
 
-        security_schemes = openapi_schema.get("components", {}).get("securitySchemes", {})
+        security_schemes = openapi_schema.get("components", {}).get(
+            "securitySchemes", {}
+        )
 
         if "HTTPBearer" in security_schemes:
             security_schemes["HTTPBearer"]["description"] = (
@@ -58,7 +60,9 @@ def create_custom_swagger_ui(app: FastAPI):
 
         html = html.replace("</head>", custom_styles + "</head>")
 
-        custom_script = "<script>" + SWAGGER_JS.read_text(encoding="utf-8") + "</script>"
+        custom_script = (
+            "<script>" + SWAGGER_JS.read_text(encoding="utf-8") + "</script>"
+        )
 
         html = html.replace("</body>", custom_script + "</body>")
 
