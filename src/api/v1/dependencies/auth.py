@@ -18,7 +18,7 @@ from src.api.v1.errors import (
 )
 from src.config import settings
 from src.schemas.base import BaseDTO
-from src.schemas.tokens import RefreshTokenDTO
+from src.schemas.tokens import AccessTokenPayloadDTO, RefreshTokenDTO
 from src.services.auth import TokenService
 from src.utils.exceptions import ObjectNotFoundError
 from src.utils.hashserv import HashService
@@ -33,7 +33,7 @@ class AccessTokenResolver:
         return creds.credentials
 
     @staticmethod
-    async def decode(token: str = Depends(get_access_token)) -> dict:
+    async def decode(token: str = Depends(get_access_token)) -> AccessTokenPayloadDTO:
         try:
             payload = TokenService.decode_access_token(token)
         except jwt.ExpiredSignatureError as exc:
@@ -43,27 +43,27 @@ class AccessTokenResolver:
         except jwt.exceptions.DecodeError as exc:
             raise InvalidTokenHTTPError(detail=str(exc)) from exc
 
-        return payload
+        return AccessTokenPayloadDTO(**payload)
 
     @staticmethod
     async def validate(
         cache: CacheDep,
-        payload: Annotated[dict, Depends(decode)],
+        payload: Annotated[AccessTokenPayloadDTO, Depends(decode)],
     ) -> int:
-        raw_sub = payload.get("sub")
+        raw_sub = hasattr(payload, "sub")
         if not raw_sub:
             raise InvalidTokenHTTPError("В токене отсутствует поле 'sub'")
         try:
-            sub = int(raw_sub)
+            sub = int(payload.sub)
         except (ValueError, TypeError) as exc:
             raise InvalidTokenHTTPError("Неверный формат 'sub' в токене") from exc
 
-        jti: str | None = payload.get("jti")
+        jti = hasattr(payload, "jti")
         if not jti:
             raise InvalidTokenHTTPError("В токене отсутствует поле 'jti'")
 
         bl_prefix = settings.auth.access_token_blacklist_prefix
-        is_blacklisted = await cache.exists(f"{bl_prefix}{jti}")
+        is_blacklisted = await cache.exists(f"{bl_prefix}{payload.jti}")
         if is_blacklisted:
             raise WithdrawnTokenHTTPError("Access токен отозван")
 
@@ -126,7 +126,9 @@ class RefreshTokenResolver:
 # получить id пользователя из JWT Access токена
 GetSubDep = Annotated[int, Depends(AccessTokenResolver())]
 # получить payload из JWT Access токена
-GetAccessTokenPayloadDep = Annotated[dict, Depends(AccessTokenResolver.decode)]
+GetAccessTokenPayloadDep = Annotated[
+    AccessTokenPayloadDTO, Depends(AccessTokenResolver.decode)
+]
 # получить сырой Access токен
 GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.validate)]
 # получить (проверить) Refresh токен в базе

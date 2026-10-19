@@ -6,8 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import CommonBaseORM
 
 if TYPE_CHECKING:
-    from src.models.users import UserORM
     from src.models.posts import PostORM
+    from src.models.users import UserORM
 
 
 class LikeORM(CommonBaseORM):
@@ -19,6 +19,7 @@ class LikeORM(CommonBaseORM):
     post_id: Mapped[int] = mapped_column(
         ForeignKey("posts.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     __table_args__ = (
         UniqueConstraint(

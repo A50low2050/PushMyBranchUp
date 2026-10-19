@@ -28,3 +28,13 @@ def fake_background_tasks():
     mock = MagicMock()
     mock.add_task = MagicMock()
     return mock
+
+
+@pytest.fixture
+def fake_payload() -> MagicMock:
+    """Заглушка AccessTokenPayloadDTO для тестов сервисов."""
+    mock = MagicMock()
+    mock.sub = "1"
+    mock.username = "tester"
+    mock.email = "tester@example.com"
+    return mock

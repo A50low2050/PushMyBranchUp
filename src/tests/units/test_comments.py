@@ -42,6 +42,7 @@ async def _prepare_db() -> DBManager:
 def test_create_comment_success(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Успешное создание комментария в БД."""
 
@@ -56,6 +57,7 @@ def test_create_comment_success(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         assert result.id is not None
@@ -75,6 +77,7 @@ def test_create_comment_success(
 def test_create_comment_raises_for_missing_post(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Создание комментария к несуществующему посту -> PostNotFoundError."""
 
@@ -90,6 +93,7 @@ def test_create_comment_raises_for_missing_post(
                 data=dto,
                 notifications=fake_notifications,
                 background_tasks=fake_background_tasks,
+                payload=fake_payload,
             )
 
         await db.__aexit__(None, None, None)
@@ -100,6 +104,7 @@ def test_create_comment_raises_for_missing_post(
 def test_get_comment_success(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Успешное получение комментария по post_id и comment_id."""
 
@@ -114,6 +119,7 @@ def test_get_comment_success(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         fetched = await service.get_comment(post_id=1, comment_id=created.id)
@@ -128,6 +134,7 @@ def test_get_comment_success(
 def test_get_comment_raises_comment_not_found_for_missing_post(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Если пост или комментарий отсутствует, возвращается CommentNotFoundError."""
 
@@ -142,6 +149,7 @@ def test_get_comment_raises_comment_not_found_for_missing_post(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         # Несуществующий post_id -> CommentNotFoundError
@@ -160,6 +168,7 @@ def test_get_comment_raises_comment_not_found_for_missing_post(
 def test_update_comment_success(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Успешное изменение комментария автором."""
 
@@ -174,6 +183,7 @@ def test_update_comment_success(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         edit_dto = CommentEditDTO(content="Обновленный текст")
@@ -194,6 +204,7 @@ def test_update_comment_success(
 def test_update_comment_raises_comment_not_found_for_missing_post(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """При неверном post_id возвращается CommentNotFoundError (один запрос к БД)."""
 
@@ -208,6 +219,7 @@ def test_update_comment_raises_comment_not_found_for_missing_post(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         edit_dto = CommentEditDTO(content="Новый текст")
@@ -227,6 +239,7 @@ def test_update_comment_raises_comment_not_found_for_missing_post(
 def test_update_comment_forbidden_for_non_author(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Попытка изменения комментария чужим пользователем вызывает ForbiddenError."""
 
@@ -241,6 +254,7 @@ def test_update_comment_forbidden_for_non_author(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         edit_dto = CommentEditDTO(content="Попытка взлома")
@@ -260,6 +274,7 @@ def test_update_comment_forbidden_for_non_author(
 def test_delete_comment_success(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Успешное удаление комментария автором."""
 
@@ -274,6 +289,7 @@ def test_delete_comment_success(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         deleted_count = await service.delete_comment(
@@ -294,6 +310,7 @@ def test_delete_comment_success(
 def test_delete_comment_raises_comment_not_found_for_missing_post(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """При неверном post_id удаление вызывает CommentNotFoundError."""
 
@@ -308,6 +325,7 @@ def test_delete_comment_raises_comment_not_found_for_missing_post(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         with pytest.raises(CommentNotFoundError):
@@ -325,6 +343,7 @@ def test_delete_comment_raises_comment_not_found_for_missing_post(
 def test_delete_comment_forbidden_for_non_author(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Попытка удаления комментария чужим пользователем вызывает ForbiddenError."""
 
@@ -339,6 +358,7 @@ def test_delete_comment_forbidden_for_non_author(
             data=dto,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
 
         with pytest.raises(ForbiddenError):

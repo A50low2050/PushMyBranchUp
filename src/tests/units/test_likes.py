@@ -39,6 +39,7 @@ async def _prepare_db() -> DBManager:
 def test_toggle_like_sets_and_removes_like(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Первый вызов ставит лайк, второй — убирает (toggle)."""
 
@@ -52,6 +53,7 @@ def test_toggle_like_sets_and_removes_like(
             user_id=1,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
         assert result.is_liked is True
         assert result.post_id == 1
@@ -66,6 +68,7 @@ def test_toggle_like_sets_and_removes_like(
             user_id=1,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
         assert result.is_liked is False
 
@@ -80,6 +83,7 @@ def test_toggle_like_sets_and_removes_like(
 def test_toggle_like_raises_for_missing_post(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Лайк несуществующего поста -> PostNotFoundError."""
 
@@ -93,6 +97,7 @@ def test_toggle_like_raises_for_missing_post(
                 user_id=1,
                 notifications=fake_notifications,
                 background_tasks=fake_background_tasks,
+                payload=fake_payload,
             )
 
         await db.__aexit__(None, None, None)
@@ -103,6 +108,7 @@ def test_toggle_like_raises_for_missing_post(
 def test_toggle_like_isolated_between_users(
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
 ) -> None:
     """Лайк одного пользователя не мешает лайку другого."""
 
@@ -116,17 +122,24 @@ def test_toggle_like_isolated_between_users(
         await db.session.flush()
         service = LikesService(db)
 
+        payload_user2 = MagicMock()
+        payload_user2.sub = "2"
+        payload_user2.username = "second"
+        payload_user2.email = "second@example.com"
+
         r1 = await service.toggle_like(
             post_id=1,
             user_id=1,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=fake_payload,
         )
         r2 = await service.toggle_like(
             post_id=1,
             user_id=2,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
+            payload=payload_user2,
         )
 
         assert r1.is_liked is True

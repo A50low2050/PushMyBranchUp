@@ -1,7 +1,8 @@
 from datetime import datetime
 
+from pydantic import EmailStr, Field
+
 from src.schemas.base import BaseDTO
-from pydantic import Field
 
 
 class RefreshTokenCreateDTO(BaseDTO):
@@ -43,3 +44,15 @@ class IssuedTokens(BaseDTO):
         default="Bearer",
         description="Тип токена авторизации.",
     )
+
+
+class UserPayloadDTO(BaseDTO):
+    sub: str
+    username: str
+    email: EmailStr
+
+
+class AccessTokenPayloadDTO(UserPayloadDTO):
+    jti: str
+    exp: float
+    iat: float

@@ -7,7 +7,7 @@ from src.api.v1.examples.comments import (
     GET_COMMENTS_RESPONSES,
     UPDATE_COMMENT_RESPONSES,
 )
-from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.auth import GetAccessTokenPayloadDep, GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
@@ -59,6 +59,7 @@ async def create_comment(
     post_id: int,
     data: CommentCreateDTO,
     sub: GetSubDep,
+    payload: GetAccessTokenPayloadDep,
     db: DatabaseDep,
     notifications: NotificationsDep,
     background_tasks: BackgroundTasks,
@@ -67,6 +68,7 @@ async def create_comment(
         result = await CommentsService(db).create_comment(
             post_id=post_id,
             user_id=sub,
+            payload=payload,
             data=data,
             notifications=notifications,
             background_tasks=background_tasks,

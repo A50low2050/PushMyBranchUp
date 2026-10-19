@@ -15,7 +15,11 @@ from src.api.v1.examples.posts import (
     DELETE_POST_RESPONSES,
 )
 
-from src.api.v1.dependencies.auth import GetSubDep, GetOptionalSubDep
+from src.api.v1.dependencies.auth import (
+    GetAccessTokenPayloadDep,
+    GetSubDep,
+    GetOptionalSubDep,
+)
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.dependencies.pagination import PaginationParams
@@ -58,6 +62,7 @@ async def create_post(
         Body(openapi_examples=CREATE_EXAMPLES),
     ],
     user_id: GetSubDep,
+    payload: GetAccessTokenPayloadDep,
     db: DatabaseDep,
     notifications: NotificationsDep,
     background_tasks: BackgroundTasks,
@@ -66,6 +71,7 @@ async def create_post(
         post = await PostsService(db).create_post(
             data=data,
             user_id=user_id,
+            payload=payload,
             notifications=notifications,
             background_tasks=background_tasks,
         )

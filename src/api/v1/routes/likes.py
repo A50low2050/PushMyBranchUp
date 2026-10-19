@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks
 
 from src.api.v1.examples.likes import TOGGLE_LIKE_RESPONSES
-from src.api.v1.dependencies.auth import GetSubDep
+from src.api.v1.dependencies.auth import GetAccessTokenPayloadDep, GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import DBQueryHTTPError, PostNotFoundHTTPError
@@ -40,6 +40,7 @@ router = APIRouter(
 async def toggle_like(
     post_id: int,
     sub: GetSubDep,
+    payload: GetAccessTokenPayloadDep,
     db: DatabaseDep,
     notifications: NotificationsDep,
     background_tasks: BackgroundTasks,
@@ -48,6 +49,7 @@ async def toggle_like(
         result = await LikesService(db).toggle_like(
             post_id=post_id,
             user_id=sub,
+            payload=payload,
             notifications=notifications,
             background_tasks=background_tasks,
         )
