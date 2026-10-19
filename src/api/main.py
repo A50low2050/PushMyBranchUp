@@ -18,6 +18,8 @@ from src.utils.exceptions import SMTPConnectionError
 from src.utils.logserv import LogService
 from src.utils.notiserv import NotificationService, SMTPProvider
 
+LogService.configurate()
+
 logger = LogService.get_logger(__name__)
 
 
@@ -423,6 +425,11 @@ async def general_exception_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
+    logger.exception(
+        "Unhandled error while processing %s %s",
+        request.method,
+        request.url.path,
+    )
     return JSONResponse(
         status_code=500,
         content={
