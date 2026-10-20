@@ -65,15 +65,13 @@ class FollowsService(BaseService):
         if not follow_resp.followed:
             return follow_resp
 
-        follower_name = payload.username
-
         background_tasks.add_task(
             notifications.notify,
             [
                 EmailMessage(
                     recipient_email=followed_user.email,
-                    subject=f"Новый подписчик: {follower_name}",
-                    body=f"На вас подписался пользователь {follower_name}.",
+                    subject=f"Новый подписчик: {payload.email}",
+                    body=f"На вас подписался пользователь {payload.email}.",
                 )
             ],
         )

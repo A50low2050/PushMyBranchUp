@@ -54,15 +54,14 @@ class PostsService(BaseService):
         if not follower_emails:
             return post_resp
 
-        author_name = payload.username
-        subject = f"Новая публикация от {author_name}"
+        subject = f"Новая публикация от {payload.email}"
         post_snippet = (
             f"«{post_resp.content[:100]}...»"
             if len(post_resp.content) > 100
             else f"«{post_resp.content}»"
         )
         body = (
-            f"Пользователь {author_name}, на которого вы подписаны, "
+            f"Пользователь {payload.email}, на которого вы подписаны, "
             f"опубликовал новый пост #{post_resp.post_id}:\n\n"
             f"{post_snippet}"
         )

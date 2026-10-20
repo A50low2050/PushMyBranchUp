@@ -68,7 +68,6 @@ class LikesService(BaseService):
         if author is None:
             return like_resp
 
-        username = payload.username
         post_snippet = (
             f"'{post.content[:25]}...'"
             if len(post.content) > 25
@@ -76,7 +75,7 @@ class LikesService(BaseService):
         )
         subject = f"Новый лайк на вашем посте #{post.id}"
         body = (
-            f"Пользователь {username} поставил лайк вашему "
+            f"Пользователь {payload.email} поставил лайк вашему "
             f"посту #{post.id} {post_snippet}!"
         )
         background_tasks.add_task(

@@ -225,3 +225,4 @@ files/
 logs/
 test_db.sqlite3
 .env.docker
+.continue/

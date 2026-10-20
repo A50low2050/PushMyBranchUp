@@ -63,7 +63,6 @@ class CommentsService(BaseService):
         if author is None:
             return comment_resp
 
-        username = payload.username
         post_snippet = (
             f"'{post.content[:25]}...'"
             if len(post.content) > 25
@@ -71,7 +70,7 @@ class CommentsService(BaseService):
         )
         body = (
             f"На ваш пост #{post.id} {post_snippet} оставили комментарий!\n\n"
-            f"Пользователь {username} пишет:\n\n"
+            f"Пользователь {payload.email} пишет:\n\n"
             f"«{result.content}»"
         )
 
