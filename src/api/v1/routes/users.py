@@ -1,5 +1,9 @@
 from fastapi import APIRouter
 
+from src.api.v1.examples.users import (
+    GET_USER_RESPONSES,
+    GET_USERS_RESPONSES,
+)
 from src.api.v1.dependencies.auth import GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.pagination import PaginationParams
@@ -7,7 +11,6 @@ from src.api.v1.errors import (
     DBQueryHTTPError,
     UserNotFoundHTTPError,
 )
-from src.schemas.errors import ErrorResponseDTO
 from src.schemas.users import (
     UserGetAllResponseDTO,
     UserSingleResponseDTO,
@@ -45,56 +48,7 @@ router = APIRouter(
         "Если пользователей нет, возвращается пустой массив `data`."
     ),
     response_model=UserGetAllResponseDTO,
-    responses={
-        200: {
-            "description": "Список пользователей успешно получен",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "page": 1,
-                        "per_page": 5,
-                        "total_pages": 1,
-                        "data": [
-                            {
-                                "id": 1,
-                                "username": "alex",
-                                "email": "alex@example.com",
-                                "created_at": "2026-10-13T12:00:00",
-                                "updated_at": "2026-10-13T12:00:00",
-                            },
-                            {
-                                "id": 2,
-                                "username": "maria",
-                                "email": "maria@example.com",
-                                "created_at": "2026-10-13T12:10:00",
-                                "updated_at": "2026-10-13T12:10:00",
-                            },
-                        ],
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректные параметры пагинации",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=GET_USERS_RESPONSES,
 )
 async def get_users(
     _: GetSubDep,
@@ -139,48 +93,7 @@ async def get_users(
         "Данные пользователя возвращаются внутри объекта `data`."
     ),
     response_model=UserSingleResponseDTO,
-    responses={
-        200: {
-            "description": "Пользователь успешно найден",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "data": {
-                            "id": 1,
-                            "username": "alex",
-                            "email": "alex@example.com",
-                            "created_at": "2026-10-13T12:00:00",
-                            "updated_at": "2026-10-13T12:00:00",
-                        }
-                    }
-                }
-            },
-        },
-        400: {
-            "model": ErrorResponseDTO,
-            "description": "Ошибка запроса к базе данных",
-        },
-        401: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь не авторизован",
-        },
-        404: {
-            "model": ErrorResponseDTO,
-            "description": "Пользователь с указанным ID не найден",
-        },
-        422: {
-            "model": ErrorResponseDTO,
-            "description": "Некорректный ID пользователя",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "VALIDATION_ERROR",
-                        "message": "Invalid request data",
-                    }
-                }
-            },
-        },
-    },
+    responses=GET_USER_RESPONSES,
 )
 async def get_user(
     user_id: int,
