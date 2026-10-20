@@ -76,6 +76,25 @@ class AccessTokenResolver:
         return sub
 
 
+class OptionalAccessTokenResolver:
+    async def __call__(
+        self,
+        cache: CacheDep,
+        creds: Annotated[
+            HTTPAuthorizationCredentials | None,
+            Depends(HTTPBearer(auto_error=False)),
+        ],
+    ) -> int | None:
+        if creds is None:
+            return None
+
+        payload = await AccessTokenResolver.decode(creds.credentials)
+        return await AccessTokenResolver.validate(
+            cache=cache,
+            payload=payload,
+        )
+
+
 class RefreshTokenResolver:
     @staticmethod
     def _get_refresh_token(request: Request) -> str:
@@ -114,3 +133,5 @@ GetAccessTokenPayloadDep = Annotated[
 GetAccessTokenDep = Annotated[str, Depends(AccessTokenResolver.validate)]
 # получить (проверить) Refresh токен в базе
 GetRefreshTokenDep = Annotated[RefreshTokenDTO, Depends(RefreshTokenResolver())]
+# Получить ID пользователя, если он авторизован, иначе None
+GetOptionalSubDep = Annotated[int | None, Depends(OptionalAccessTokenResolver())]

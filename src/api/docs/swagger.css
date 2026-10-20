@@ -1,0 +1,67 @@
+/* Скрываем только Servers, не затрагивая Authorize */
+    .swagger-ui .scheme-container .servers,
+    .swagger-ui .scheme-container .servers-title {
+        display: none !important;
+    }
+
+    /* Кнопка Authorize остаётся видимой */
+    .swagger-ui .scheme-container .auth-wrapper {
+        display: flex !important;
+    }
+
+    /* Скрываем кнопку копирования пути */
+    .swagger-ui .copy-to-clipboard {
+        display: none !important;
+    }
+
+    /* Скрываем надписи required и звёздочки */
+    .swagger-ui span.required,
+    .swagger-ui .parameter__name.required::after {
+        display: none !important;
+    }
+
+    /* Скрываем колонку Links */
+    .swagger-ui .responses-table th.response-col_links,
+    .swagger-ui .responses-table td.response-col_links {
+        display: none !important;
+    }
+
+    /* Единый размер обычного текста в описаниях методов */
+    .swagger-ui .opblock-description-wrapper p,
+    .swagger-ui .opblock-description-wrapper li,
+    .swagger-ui .opblock-external-docs-wrapper p,
+    .swagger-ui .opblock-external-docs-wrapper li,
+    .swagger-ui .opblock-body .markdown p,
+    .swagger-ui .opblock-body .markdown li {
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+    }
+
+/* Компактное расположение кнопки Authorize */
+.swagger-ui .scheme-container {
+    padding: 0 0 12px;
+    margin: 0;
+    box-shadow: none;
+}
+
+.swagger-ui .scheme-container .schemes {
+    padding: 0;
+    margin: 0;
+    min-height: 0;
+}
+
+.swagger-ui .auth-wrapper {
+    padding: 0;
+    margin: 0;
+}
+
+/* Выравнивание Authorize по правому краю документации */
+.swagger-ui .scheme-container .schemes {
+    max-width: 1460px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.swagger-ui .scheme-container .auth-wrapper {
+    margin-left: auto;
+}
