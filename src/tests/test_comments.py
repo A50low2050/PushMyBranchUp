@@ -36,7 +36,7 @@ class TestComments:
             headers=auth_headers,
             json={"content": "Комментарий в никуда"},
         )
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
         assert response.json()["error"] == "POST_NOT_FOUND"
 
     async def test_get_comments_list(
@@ -110,7 +110,7 @@ class TestComments:
             route_path(f"/posts/99999/comments/{comment_id}"),
             headers=auth_headers,
         )
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
         assert response.json()["error"] == "COMMENT_NOT_FOUND"
 
     async def test_edit_comment_success(
@@ -156,7 +156,7 @@ class TestComments:
             headers=auth_headers,
             json={"content": "Попытка изменения"},
         )
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
         assert response.json()["error"] == "COMMENT_NOT_FOUND"
 
     async def test_edit_comment_forbidden(
@@ -180,7 +180,7 @@ class TestComments:
             headers=second_user_headers["headers"],
             json={"content": "Взлом чужого комментария"},
         )
-        assert response.status_code == 403
+        assert response.status_code == 403, response.text
         assert response.json()["error"] == "FORBIDDEN"
 
     async def test_delete_comment_success(
@@ -233,7 +233,7 @@ class TestComments:
             route_path(f"/posts/99999/comments/{comment_id}"),
             headers=auth_headers,
         )
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
         assert response.json()["error"] == "COMMENT_NOT_FOUND"
 
     async def test_delete_comment_forbidden(
@@ -256,5 +256,5 @@ class TestComments:
             route_path(f"/posts/{post_id}/comments/{comment_id}"),
             headers=second_user_headers["headers"],
         )
-        assert response.status_code == 403
+        assert response.status_code == 403, response.text
         assert response.json()["error"] == "FORBIDDEN"

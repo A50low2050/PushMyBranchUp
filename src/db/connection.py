@@ -1,13 +1,19 @@
+import os
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import event
 from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.pool import ConnectionPoolEntry
+from sqlalchemy.pool import NullPool
 
 from src.config import settings
 
+_TESTING = os.environ.get("ENV_TESTING", "false").lower() == "true"
+
 engine = create_async_engine(
-    url=settings.database.url,
-    echo=settings.database.echo,
+    os.environ.get("ENV_DATABASE__URL", "sqlite+aiosqlite:///./db.sqlite3"),
+    echo=False,
+    poolclass=NullPool if _TESTING else None,
 )
 
 

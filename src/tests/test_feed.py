@@ -51,4 +51,4 @@ class TestFeed:
     async def test_feed_unauthorized(self, client):
         """Фид без токена возвращает 401."""
         response = await client.get("/v1/posts/feed")
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text

@@ -22,7 +22,7 @@ from src.utils.hashserv import HashService
 class TokenService(BaseService):
     @classmethod
     def create_access_token(cls, payload: UserPayloadDTO) -> CreatedAccessToken:
-        token_data = payload.copy()
+        token_data = payload.model_copy()
         now = datetime.now(UTC)
         expires = now + settings.auth.access_token_expire_delta
         expires_timestamp = datetime.timestamp(expires)
