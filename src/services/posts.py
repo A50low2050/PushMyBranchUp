@@ -17,7 +17,10 @@ from src.utils.exceptions import (
     ObjectNotFoundError,
     PostNotFoundError,
 )
+from src.utils.logserv import LogService
 from src.utils.notiserv import EmailMessage, NotificationService
+
+logger = LogService.get_logger(__name__)
 
 
 class PostsService(BaseService):
@@ -101,6 +104,7 @@ class PostsService(BaseService):
                 user_id=user_id,
             )
         except ObjectNotFoundError as exc:
+            logger.error("Получение поста: пост #%s не найден", post_id)
             raise PostNotFoundError from exc
         return post
 
@@ -124,7 +128,13 @@ class PostsService(BaseService):
         deleted_count = await self.db.posts.delete(id=post_id, user_id=user_id)
         if not deleted_count:
             if not await self.db.posts.exists(id=post_id):
+                logger.error("Удаление поста: пост #%s не найден", post_id)
                 raise PostNotFoundError
+            logger.error(
+                "Удаление поста: пользователь #%s не является автором поста #%s",
+                user_id,
+                post_id,
+            )
             raise ForbiddenError
 
         await self.db.commit()
@@ -139,9 +149,16 @@ class PostsService(BaseService):
         try:
             post = cast(PostDTO, await self.db.posts.get_one(id=post_id))
         except ObjectNotFoundError as exc:
+            logger.error("Редактирование поста: пост #%s не найден", post_id)
             raise PostNotFoundError(str(exc)) from exc
 
         if post.user_id != user_id:
+            logger.error(
+                "Редактирование поста: пользователь #%s не является "
+                "автором поста #%s",
+                user_id,
+                post_id,
+            )
             raise ForbiddenError
 
         await self.db.posts.update(data=data, id=post_id)

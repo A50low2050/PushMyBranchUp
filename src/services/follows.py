@@ -11,7 +11,10 @@ from src.utils.exceptions import (
     SelfFollowError,
     UserNotFoundError,
 )
+from src.utils.logserv import LogService
 from src.utils.notiserv import EmailMessage, NotificationService
+
+logger = LogService.get_logger(__name__)
 
 
 class FollowsService(BaseService):
@@ -24,12 +27,20 @@ class FollowsService(BaseService):
         payload: AccessTokenPayloadDTO,
     ) -> FollowResponseDTO:
         if followed_id == follower_id:
+            logger.error(
+                "Переключение подписки: пользователь #%s пытается подписаться "
+                "на самого себя",
+                follower_id,
+            )
             raise SelfFollowError
 
         followed_user = cast(
             UserDTO | None, await self.db.users.get_one_or_none(id=followed_id)
         )
         if followed_user is None:
+            logger.error(
+                "Переключение подписки: пользователь #%s не найден", followed_id
+            )
             raise UserNotFoundError
 
         subscription = await self.db.subscriptions.get_one_or_none(

@@ -19,7 +19,10 @@ from src.utils.exceptions import (
     ObjectNotFoundError,
     PostNotFoundError,
 )
+from src.utils.logserv import LogService
 from src.utils.notiserv import EmailMessage, NotificationService
+
+logger = LogService.get_logger(__name__)
 
 
 class CommentsService(BaseService):
@@ -34,6 +37,7 @@ class CommentsService(BaseService):
     ) -> CommentResponseDTO:
         post = cast(PostDTO | None, await self.db.posts.get_one_or_none(id=post_id))
         if post is None:
+            logger.error("Создание комментария: пост #%s не найден", post_id)
             raise PostNotFoundError
 
         comment_data = CommentAddDTO(
@@ -94,6 +98,7 @@ class CommentsService(BaseService):
         offset: int,
     ) -> list[CommentResponseDTO]:
         if not await self.db.posts.exists(id=post_id):
+            logger.error("Получение комментариев: пост #%s не найден", post_id)
             raise PostNotFoundError
 
         comments = await self.db.comments.get_all_filtered(
@@ -112,6 +117,7 @@ class CommentsService(BaseService):
         total_count = await self.db.comments.get_total(post_id=post_id)
         if total_count == 0:
             if not await self.db.posts.exists(id=post_id):
+                logger.error("Получение комментариев: пост #%s не найден", post_id)
                 raise PostNotFoundError
             return [], 0
 
@@ -133,6 +139,11 @@ class CommentsService(BaseService):
                 id=comment_id,
             )
         except ObjectNotFoundError as exc:
+            logger.error(
+                "Получение комментария: комментарий #%s к посту #%s не найден",
+                comment_id,
+                post_id,
+            )
             raise CommentNotFoundError(str(exc)) from exc
         return CommentResponseDTO.model_validate(comment)
 
@@ -152,9 +163,20 @@ class CommentsService(BaseService):
                 ),
             )
         except ObjectNotFoundError as exc:
+            logger.error(
+                "Редактирование комментария: комментарий #%s к посту #%s " "не найден",
+                comment_id,
+                post_id,
+            )
             raise CommentNotFoundError(str(exc)) from exc
 
         if comment.user_id != user_id:
+            logger.error(
+                "Редактирование комментария: пользователь #%s не является "
+                "автором комментария #%s",
+                user_id,
+                comment_id,
+            )
             raise ForbiddenError
 
         await self.db.comments.update(
@@ -180,9 +202,20 @@ class CommentsService(BaseService):
                 ),
             )
         except ObjectNotFoundError as exc:
+            logger.error(
+                "Удаление комментария: комментарий #%s к посту #%s не найден",
+                comment_id,
+                post_id,
+            )
             raise CommentNotFoundError(str(exc)) from exc
 
         if comment.user_id != user_id:
+            logger.error(
+                "Удаление комментария: пользователь #%s не является автором "
+                "комментария #%s",
+                user_id,
+                comment_id,
+            )
             raise ForbiddenError
 
         deleted_count = await self.db.comments.delete(
