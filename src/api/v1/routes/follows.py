@@ -1,13 +1,15 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 
 from src.api.v1.examples.follows import TOGGLE_FOLLOW_RESPONSES
 from src.api.v1.dependencies.auth import GetAccessTokenPayloadDep, GetSubDep
 from src.api.v1.dependencies.db import DatabaseDep
 from src.api.v1.dependencies.notifications import NotificationsDep
 from src.api.v1.errors import BadRequestHTTPError, UserNotFoundHTTPError
+from src.config import settings
 from src.schemas.follows import FollowResponseDTO
 from src.services.follows import FollowsService
 from src.utils.exceptions import SelfFollowError, UserNotFoundError
+from src.utils.limiter import limiter
 
 router = APIRouter(
     prefix="/users",
@@ -37,7 +39,9 @@ router = APIRouter(
     response_model=FollowResponseDTO,
     responses=TOGGLE_FOLLOW_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.follows_limit)
 async def toggle_follow(
+    request: Request,
     user_id: int,
     sub: GetSubDep,
     payload: GetAccessTokenPayloadDep,

@@ -5,15 +5,18 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 
 from src.api.docs.description import API_DESCRIPTION
 from src.api.docs.swagger import create_custom_openapi, create_custom_swagger_ui
 from src.api.v1 import router as v1_router
+from src.api.v1.errors import RateLimitHTTPError
 from src.config import settings
 from src.db.connection import sessionmaker
 from src.db.manager import DBManager
 from src.utils.cacheserv import InMemoryAsyncCacheService
 from src.utils.exceptions import SMTPConnectionError
+from src.utils.limiter import limiter
 from src.utils.logserv import LogService
 from src.utils.notiserv import NotificationService, SMTPProvider
 
@@ -76,6 +79,7 @@ app = FastAPI(
     root_path=settings.fastapi.root_path,
     docs_url=None,
 )
+app.state.limiter = limiter
 
 
 app.openapi = create_custom_openapi(app)  # type: ignore
@@ -87,6 +91,28 @@ async def swagger_ui():
 
 
 # Обработчики ошибок
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(
+    request: Request,
+    exc: RateLimitExceeded,
+) -> JSONResponse:
+    error_obj = RateLimitHTTPError(detail=f"Превышен лимит запросов: {exc.detail}")
+    response = JSONResponse(
+        status_code=error_obj.status_code,
+        content={
+            "error": error_obj.error,
+            "message": error_obj.detail,
+        },
+    )
+    if hasattr(request.app.state, "limiter") and hasattr(
+        request.state, "view_rate_limit"
+    ):
+        response = request.app.state.limiter._inject_headers(
+            response, request.state.view_rate_limit
+        )
+    return response
 
 
 @app.exception_handler(HTTPException)

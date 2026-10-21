@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path, BackgroundTasks, status
+from fastapi import APIRouter, Body, Path, BackgroundTasks, Request, status
 
 
 from src.api.v1.examples.posts import (
@@ -28,6 +28,7 @@ from src.api.v1.errors import (
     ForbiddenHTTPError,
     PostNotFoundHTTPError,
 )
+from src.config import settings
 from src.schemas.posts import (
     PostCreateDTO,
     PostDeleteResponseDTO,
@@ -41,6 +42,7 @@ from src.utils.exceptions import (
     ForbiddenError,
     PostNotFoundError,
 )
+from src.utils.limiter import limiter
 
 router = APIRouter(prefix="/posts", tags=["Посты"])
 
@@ -56,7 +58,9 @@ router = APIRouter(prefix="/posts", tags=["Посты"])
     ),
     responses=CREATE_POST_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def create_post(
+    request: Request,
     data: Annotated[
         PostCreateDTO,
         Body(openapi_examples=CREATE_EXAMPLES),
@@ -94,7 +98,9 @@ async def create_post(
     ),
     responses=GET_POSTS_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def get_posts(
+    request: Request,
     pagination: PaginationParams,
     sub: GetOptionalSubDep,
     db: DatabaseDep,
@@ -127,7 +133,9 @@ async def get_posts(
     ),
     responses=GET_POSTS_FEED_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def get_posts_feed(
+    request: Request,
     pagination: PaginationParams,
     sub: GetSubDep,
     db: DatabaseDep,
@@ -162,7 +170,9 @@ async def get_posts_feed(
     ),
     responses=GET_POST_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def get_post(
+    request: Request,
     post_id: Annotated[
         int,
         Path(
@@ -197,7 +207,9 @@ async def get_post(
     ),
     responses=EDIT_POST_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def edit_post(
+    request: Request,
     post_id: Annotated[
         int,
         Path(
@@ -239,7 +251,9 @@ async def edit_post(
     ),
     responses=DELETE_POST_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.posts_limit)
 async def delete_post(
+    request: Request,
     post_id: Annotated[
         int,
         Path(

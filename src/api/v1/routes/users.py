@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from src.api.v1.examples.users import (
     GET_USER_RESPONSES,
@@ -11,6 +11,7 @@ from src.api.v1.errors import (
     DBQueryHTTPError,
     UserNotFoundHTTPError,
 )
+from src.config import settings
 from src.schemas.users import (
     UserGetAllResponseDTO,
     UserSingleResponseDTO,
@@ -20,6 +21,7 @@ from src.utils.exceptions import (
     DBQueryError,
     UserNotFoundError,
 )
+from src.utils.limiter import limiter
 
 router = APIRouter(
     prefix="/users",
@@ -50,7 +52,9 @@ router = APIRouter(
     response_model=UserGetAllResponseDTO,
     responses=GET_USERS_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.users_limit)
 async def get_users(
+    request: Request,
     _: GetSubDep,
     pagination: PaginationParams,
     db: DatabaseDep,
@@ -95,7 +99,9 @@ async def get_users(
     response_model=UserSingleResponseDTO,
     responses=GET_USER_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.users_limit)
 async def get_user(
+    request: Request,
     user_id: int,
     _: GetSubDep,
     db: DatabaseDep,
