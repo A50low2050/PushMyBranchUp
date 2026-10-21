@@ -22,8 +22,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
 	PATH="/opt/venv/bin:$PATH"
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint.sh /
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 RUN useradd --create-home --shell /bin/bash appuser
 RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
 
