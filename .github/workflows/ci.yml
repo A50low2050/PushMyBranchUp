@@ -54,8 +54,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare Docker environment file
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
         run: |
-          cp .env.docker.example .env.docker
+          if [ -n "$SMTP_HOST" ]; then
+            echo "ENV_NOTIFICATIONS__ENABLED=True" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__EMAIL__HOST=$SMTP_HOST" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__EMAIL__PORT=$SMTP_PORT" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__EMAIL__USER=$SMTP_USER" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__EMAIL__PASSWORD=$SMTP_PASSWORD" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL=$SMTP_FROM_EMAIL" >> .env.docker.example
+          fi
 
       - name: Build Docker image
         run: |
