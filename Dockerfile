@@ -22,17 +22,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 	PYTHONUNBUFFERED=1 \
 	PATH="/opt/venv/bin:$PATH"
 
+RUN apt-get update && apt-get install -y --no-install-recommends gosu && rm -rf /var/lib/apt/lists/*
+
 COPY entrypoint.sh /
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 RUN useradd --create-home --shell /bin/bash appuser
-RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
+RUN mkdir -p /app/data /app/logs && chown -R appuser:appuser /app/data /app/logs
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser . .
 
-USER appuser
 EXPOSE 8888
-
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "src/main.py"]
