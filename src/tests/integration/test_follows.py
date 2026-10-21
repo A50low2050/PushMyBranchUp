@@ -43,7 +43,7 @@ class TestFollows:
     async def test_toggle_follow_user_not_found(self, client, auth_headers):
         """Подписка на несуществующего пользователя возвращает 404."""
         response = await client.put("/v1/users/999999/follow", headers=auth_headers)
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
 
     async def test_toggle_follow_self(self, client, auth_headers, registered_user):
         """Подписка на самого себя возвращает 400."""
@@ -52,13 +52,13 @@ class TestFollows:
             f"/v1/users/{target_id}/follow",
             headers=auth_headers,
         )
-        assert response.status_code == 400
+        assert response.status_code == 400, response.text
 
     async def test_toggle_follow_unauthorized(self, client, registered_user):
         """Подписка без токена возвращает 401."""
         target_id = registered_user["id"]
         response = await client.put(f"/v1/users/{target_id}/follow")
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     async def test_follow_affects_feed(
         self, client, auth_headers, registered_user, second_user_headers, multiple_posts
