@@ -30,7 +30,7 @@ class TestLikes:
 
         response = await client.put(url)
 
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     async def test_toggle_like_post_not_found(self, client, auth_headers):
         """Попытка поставить лайк на несуществующий пост возвращает 404."""
@@ -39,7 +39,7 @@ class TestLikes:
 
         response = await client.put(url, headers=auth_headers)
 
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
 
     async def test_toggle_like_remove(self, client, auth_headers, created_post):
         """Повторный вызов toggle_like убирает лайк (is_liked=False)."""

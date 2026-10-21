@@ -2,6 +2,8 @@
 
 import pytest
 
+from src.tests.conftest import route_path
+
 pytestmark = pytest.mark.posts
 
 
@@ -9,12 +11,12 @@ class TestPosts:
     """Сценарии создания постов (включая границы длины)."""
 
     async def test_create_post_success(self, client, auth_headers, registered_user):
-        """Успешное создание поста возвращает 200 и данные поста."""
+        """Успешное создание поста возвращает 201 и данные поста."""
         payload = {"content": "Это тестовый пост с валидным содержимым."}
 
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
-        assert response.status_code == 200, response.text
+        assert response.status_code == 201, response.text
         data = response.json()["data"]
         assert data["content"] == payload["content"]
         assert data["user_id"] == registered_user["id"]
@@ -32,7 +34,7 @@ class TestPosts:
 
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
-        assert response.status_code == 422
+        assert response.status_code == 422, response.text
 
     async def test_create_post_whitespace_only(self, client, auth_headers):
         """Попытка создать пост из пробелов возвращает 422 (validator)."""
@@ -40,7 +42,7 @@ class TestPosts:
 
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
-        assert response.status_code == 422
+        assert response.status_code == 422, response.text
 
     async def test_create_post_unauthorized(self, client):
         """Попытка создать пост без токена возвращает 401."""
@@ -48,14 +50,14 @@ class TestPosts:
 
         response = await client.post("/v1/posts", json=payload)
 
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     async def test_create_post_min_length_ok(self, client, auth_headers):
         """Пост из 1 символа создаётся успешно (граница min_length)."""
         response = await client.post(
             "/v1/posts", json={"content": "а"}, headers=auth_headers
         )
-        assert response.status_code == 200, response.text
+        assert response.status_code == 201, response.text
         assert response.json()["data"]["content"] == "а"
 
     async def test_create_post_max_length_ok(self, client, auth_headers):
@@ -64,7 +66,7 @@ class TestPosts:
         response = await client.post(
             "/v1/posts", json={"content": content}, headers=auth_headers
         )
-        assert response.status_code == 200, response.text
+        assert response.status_code == 201, response.text
         assert len(response.json()["data"]["content"]) == 2200
 
     async def test_create_post_too_long(self, client, auth_headers):
@@ -72,7 +74,7 @@ class TestPosts:
         response = await client.post(
             "/v1/posts", json={"content": "а" * 2201}, headers=auth_headers
         )
-        assert response.status_code == 422
+        assert response.status_code == 422, response.text
 
 
 class TestDeletePost:
@@ -92,7 +94,7 @@ class TestDeletePost:
     async def test_delete_post_not_found(self, client, auth_headers):
         """Удаление несуществующего поста возвращает 404."""
         response = await client.delete("/v1/posts/999999", headers=auth_headers)
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
 
     async def test_delete_post_forbidden(
         self, client, auth_headers, second_user_headers, created_post
@@ -103,13 +105,13 @@ class TestDeletePost:
             f"/v1/posts/{post_id}",
             headers=second_user_headers["headers"],
         )
-        assert response.status_code == 403
+        assert response.status_code == 403, response.text
 
     async def test_delete_post_unauthorized(self, client, created_post):
         """Удаление без токена возвращает 401."""
         post_id = created_post["id"]
         response = await client.delete(f"/v1/posts/{post_id}")
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     async def test_delete_post_cascades_comments_and_likes(
         self, client, auth_headers, created_post
@@ -200,6 +202,11 @@ class TestPagination:
         assert body["total_pages"] == 3
 
     async def test_pagination_unauthorized(self, client):
-        """GET /v1/posts без токена возвращает 401."""
-        response = await client.get("/v1/posts")
-        assert response.status_code == 401
+        """Анонимная пагинация возвращает пустую страницу (публичный read-only доступ)."""
+        response = await client.get(route_path("/posts"), params={"limit": 5})
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert (
+            body["data"] == []
+        ), f"Ожидали пустой список для гостя, получили {body['data']}"
+        assert body["total_pages"] >= 0

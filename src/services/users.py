@@ -39,10 +39,15 @@ class UsersService(BaseService):
                 email=data.email
             )  # type: ignore
         except ObjectNotFoundError as exc:
+            logger.error(
+                "Неудачная попытка входа: пользователь с email %s не найден",
+                data.email,
+            )
             raise InvalidLoginDataError from exc
 
         is_same = PasswordService.verify(data.password, user.hashed_password)
         if not is_same:
+            logger.error("Неудачная попытка входа: неверный пароль для %s", data.email)
             raise InvalidLoginDataError
 
         rf_token: RefreshTokenDTO | None = await self.db.rf_tokens.get_one_or_none(
@@ -69,6 +74,9 @@ class UsersService(BaseService):
                 id=token.owner_id
             )  # type: ignore
         except ObjectNotFoundError as exc:
+            logger.error(
+                "Обновление токенов: пользователь #%s не найден", token.owner_id
+            )
             raise UserNotFoundError from exc
 
         await TokenService(self.db).blacklist_ac_token(rf_token=token, cache=cache)
@@ -91,6 +99,9 @@ class UsersService(BaseService):
             result = await self.db.users.add(user)
             await self.db.commit()
         except ObjectAlreadyExistsError as exc:
+            logger.error(
+                "Регистрация: пользователь с email %s уже существует", data.email
+            )
             raise UserAlreadyExistsError from exc
 
         user_schema = UserResponseDTO.model_validate(result)
@@ -100,6 +111,7 @@ class UsersService(BaseService):
         try:
             result = await self.db.users.get_one(id=user_id)
         except ObjectNotFoundError as exc:
+            logger.error("Получение профиля: пользователь #%s не найден", user_id)
             raise UserNotFoundError from exc
 
         user_schema = UserResponseDTO.model_validate(result)
@@ -135,6 +147,7 @@ class UsersService(BaseService):
         try:
             user: UserDTO = await self.db.users.get_one(id=user_id)  # type: ignore
         except ObjectNotFoundError as exc:
+            logger.error("Обновление профиля: пользователь #%s не найден", user_id)
             raise UserNotFoundError from exc
 
         user_schema = UserResponseDTO.model_validate(user)
@@ -144,9 +157,13 @@ class UsersService(BaseService):
         try:
             result = await self.db.users.update(data, id=user_id)
         except ObjectAlreadyExistsError as exc:
+            logger.error(
+                "Обновление профиля: имя пользователя %s уже занято", data.username
+            )
             raise UserAlreadyExistsError from exc
 
         if not result:
+            logger.error("Обновление профиля: пользователь #%s не найден", user_id)
             raise UserNotFoundError
 
         await self.db.commit()

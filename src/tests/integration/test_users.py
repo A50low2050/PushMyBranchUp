@@ -67,7 +67,7 @@ class TestUsers:
             route_path("/users/99999"),
             headers=auth_headers,
         )
-        assert response.status_code == 404
+        assert response.status_code == 404, response.text
         assert response.json()["error"] == "USER_NOT_FOUND"
 
     async def test_get_me_contract(

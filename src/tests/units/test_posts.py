@@ -16,11 +16,6 @@ from src.schemas.posts import PostEditDTO
 from src.services.posts import PostsService
 from src.utils.exceptions import ForbiddenError, PostNotFoundError
 
-pytestmark = pytest.mark.filterwarnings(
-    "ignore::pytest.PytestUnhandledThreadExceptionWarning"
-)
-
-
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 

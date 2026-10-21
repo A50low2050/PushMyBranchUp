@@ -8,7 +8,10 @@ from src.schemas.tokens import AccessTokenPayloadDTO
 from src.schemas.users import UserDTO
 from src.services.base import BaseService
 from src.utils.exceptions import ObjectAlreadyExistsError, PostNotFoundError
+from src.utils.logserv import LogService
 from src.utils.notiserv import EmailMessage, NotificationService
+
+logger = LogService.get_logger(__name__)
 
 
 class LikesService(BaseService):
@@ -25,6 +28,7 @@ class LikesService(BaseService):
 
         post = cast(PostDTO | None, await self.db.posts.get_one_or_none(id=post_id))
         if post is None:
+            logger.error("Переключение лайка: пост #%s не найден", post_id)
             raise PostNotFoundError
 
         like = await self.db.likes.get_one_or_none(

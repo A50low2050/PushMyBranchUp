@@ -12,11 +12,11 @@ class TestRegistration:
     """Сценарии регистрации."""
 
     async def test_register_success(self, client, register_payload):
-        """Успешная регистрация возвращает 200 и данные пользователя."""
+        """Успешная регистрация возвращает 201 и данные пользователя."""
         response = await client.post(
             route_path("/auth/register"), json=register_payload
         )
-        assert response.status_code == 200, response.text
+        assert response.status_code == 201, response.text
 
         body = response.json()
         assert "data" in body
@@ -31,7 +31,7 @@ class TestRegistration:
             "password": "AnotherPass123!",
         }
         response = await client.post(route_path("/auth/register"), json=payload)
-        assert response.status_code == 409
+        assert response.status_code == 409, response.text
         assert response.json()["error"] == "USER_ALREADY_EXISTS"
 
     @pytest.mark.parametrize(
@@ -58,7 +58,7 @@ class TestRegistration:
     async def test_register_validation_errors(self, client, payload):
         """Невалидные данные при регистрации возвращают 422 от pydantic."""
         response = await client.post(route_path("/auth/register"), json=payload)
-        assert response.status_code == 422
+        assert response.status_code == 422, response.text
 
 
 class TestLogin:
@@ -131,7 +131,7 @@ class TestLogin:
         assert "Max-Age=0" in set_cookie or "expires=" in set_cookie.lower()
 
     async def test_login_wrong_password(self, client, registered_user):
-        """Вход с неверным паролем возвращает 400."""
+        """Вход с неверным паролем возвращает 401."""
         response = await client.post(
             route_path("/auth/login"),
             json={
@@ -139,16 +139,16 @@ class TestLogin:
                 "password": "WrongPassword123!",
             },
         )
-        assert response.status_code == 400
+        assert response.status_code == 401, response.text
         assert response.json()["error"] == "INVALID_LOGIN_DATA"
 
     async def test_login_nonexistent_user(self, client):
-        """Вход несуществующего пользователя возвращает 400 (пустая БД)."""
+        """Вход несуществующего пользователя возвращает 401 (пустая БД)."""
         response = await client.post(
             route_path("/auth/login"),
             json={"email": "noone@example.com", "password": "Whatever123!"},
         )
-        assert response.status_code == 400
+        assert response.status_code == 401, response.text
 
 
 class TestAccess:
@@ -158,7 +158,7 @@ class TestAccess:
     async def test_me_forbidden_without_token(self, client):
         """GET /auth/me без заголовка Authorization возвращает 401."""
         response = await client.get(route_path("/auth/me"))
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     @pytest.mark.access
     async def test_me_forbidden_with_invalid_token(self, client):
@@ -167,7 +167,7 @@ class TestAccess:
             route_path("/auth/me"),
             headers={"Authorization": "Bearer invalid.token.here"},
         )
-        assert response.status_code == 401
+        assert response.status_code == 401, response.text
 
     async def test_me_success_with_valid_token(self, client, auth_headers):
         """GET /auth/me с валидным токеном возвращает данные пользователя."""
