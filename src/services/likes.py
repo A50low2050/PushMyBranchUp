@@ -55,6 +55,12 @@ class LikesService(BaseService):
             is_liked = False
 
         await self.db.commit()
+        logger.info(
+            "Пользователь #%s %s лайк поста #%s",
+            user_id,
+            "поставил" if is_liked else "убрал",
+            post_id,
+        )
 
         like_resp = LikeResponseDTO(
             post_id=post_id,

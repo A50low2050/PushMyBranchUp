@@ -47,6 +47,12 @@ class CommentsService(BaseService):
         )
         result = cast(CommentDTO, await self.db.comments.add(comment_data))
         await self.db.commit()
+        logger.info(
+            "Пользователь #%s добавил комментарий #%s к посту #%s",
+            user_id,
+            result.id,
+            post_id,
+        )
 
         comment_resp = CommentResponseDTO(
             id=result.id,
