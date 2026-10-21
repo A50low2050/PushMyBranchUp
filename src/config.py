@@ -96,6 +96,19 @@ class NotificationsSettings(BaseModel):
     email: SMTPEmailNotificationsSettings = SMTPEmailNotificationsSettings()
 
 
+class RateLimitSettings(BaseModel):
+    """настройки ограничения частоты запросов (Rate Limiting)"""
+
+    enabled: bool = True
+    default_limit: str = "100/minute"
+    auth_limit: str = "30/minute"
+    posts_limit: str = "60/minute"
+    comments_limit: str = "60/minute"
+    likes_limit: str = "100/minute"
+    follows_limit: str = "60/minute"
+    users_limit: str = "100/minute"
+
+
 class Settings(BaseSettings):
     """настройки приложения"""
 
@@ -103,6 +116,7 @@ class Settings(BaseSettings):
     database: DBSettings
     auth: AuthSettings
     notifications: NotificationsSettings
+    rate_limit: RateLimitSettings = RateLimitSettings()
     fastapi: FastAPISettings = FastAPISettings()
     cookie: CookieSettings = CookieSettings()
 

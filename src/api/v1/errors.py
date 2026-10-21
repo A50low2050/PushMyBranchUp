@@ -93,3 +93,9 @@ class DBQueryHTTPError(ApplicationHTTPError):
 class ExpiredTokenHTTPError(ApplicationHTTPError):
     detail = "Токен устарел"
     status_code = status.HTTP_401_UNAUTHORIZED
+
+
+class RateLimitHTTPError(ApplicationHTTPError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    error = "RATE_LIMIT_EXCEEDED"
+    detail = "Превышен лимит запросов. Попробуйте позже."

@@ -61,3 +61,7 @@ class SelfFollowError(ApplicationBaseError):
 
 class SMTPConnectionError(ApplicationBaseError):
     detail = "Ошибка соединения с SMTP-сервером"
+
+
+class RateLimitError(ApplicationBaseError):
+    detail = "Превышен лимит запросов. Попробуйте позже."

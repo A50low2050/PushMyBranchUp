@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Request, Response, status
 
 from src.api.v1.examples.auth import (
     GET_ME_RESPONSES,
@@ -36,6 +36,7 @@ from src.utils.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
+from src.utils.limiter import limiter
 
 router = APIRouter(
     prefix="/auth",
@@ -49,7 +50,9 @@ router = APIRouter(
     description="Возвращает данные авторизованного пользователя. Требуется access-токен.",
     responses=GET_ME_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def get_me(
+    request: Request,
     sub: GetSubDep,
     db: DatabaseDep,
 ) -> UserGetMeResponseDTO:
@@ -75,7 +78,9 @@ async def get_me(
     ),
     responses=REGISTER_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def register(
+    request: Request,
     data: UserRegisterDTO,
     db: DatabaseDep,
 ) -> UserGetMeResponseDTO:
@@ -102,7 +107,9 @@ async def register(
     ),
     responses=LOGIN_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def login(
+    request: Request,
     data: UserLoginDTO,
     response: Response,
     db: DatabaseDep,
@@ -145,7 +152,9 @@ async def login(
     ),
     responses=REFRESH_TOKEN_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def refresh_token(
+    request: Request,
     token: GetRefreshTokenDep,
     response: Response,
     db: DatabaseDep,
@@ -190,7 +199,9 @@ async def refresh_token(
     responses=LOGOUT_RESPONSES,
     status_code=204,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def logout(
+    request: Request,
     response: Response,
     sub: GetSubDep,
     rf_token: GetRefreshTokenDep,
@@ -229,7 +240,9 @@ async def logout(
     ),
     responses=UPDATE_ME_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.auth_limit)
 async def update_me(
+    request: Request,
     data: UserUpdateDTO,
     sub: GetSubDep,
     db: DatabaseDep,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, status
+from fastapi import APIRouter, BackgroundTasks, Request, status
 
 from src.api.v1.examples.comments import (
     CREATE_COMMENT_RESPONSES,
@@ -17,6 +17,7 @@ from src.api.v1.errors import (
     ForbiddenHTTPError,
     PostNotFoundHTTPError,
 )
+from src.config import settings
 from src.schemas.comments import (
     CommentCreateDTO,
     CommentDeleteDataDTO,
@@ -32,6 +33,7 @@ from src.utils.exceptions import (
     ForbiddenError,
     PostNotFoundError,
 )
+from src.utils.limiter import limiter
 
 router = APIRouter(
     prefix="/posts",
@@ -55,7 +57,9 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     responses=CREATE_COMMENT_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.comments_limit)
 async def create_comment(
+    request: Request,
     post_id: int,
     data: CommentCreateDTO,
     sub: GetSubDep,
@@ -103,7 +107,9 @@ async def create_comment(
     response_model=CommentFeedResponseDTO,
     responses=GET_COMMENTS_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.comments_limit)
 async def get_comments(
+    request: Request,
     post_id: int,
     pagination: PaginationParams,
     _: GetSubDep,
@@ -148,7 +154,9 @@ async def get_comments(
     response_model=CommentResponseDTO,
     responses=GET_COMMENT_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.comments_limit)
 async def get_comment(
+    request: Request,
     post_id: int,
     comment_id: int,
     _: GetSubDep,
@@ -183,7 +191,9 @@ async def get_comment(
     response_model=CommentResponseDTO,
     responses=UPDATE_COMMENT_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.comments_limit)
 async def update_comment(
+    request: Request,
     post_id: int,
     comment_id: int,
     data: CommentEditDTO,
@@ -224,7 +234,9 @@ async def update_comment(
     response_model=CommentDeleteResponseDTO,
     responses=DELETE_COMMENT_RESPONSES,
 )
+@limiter.limit(settings.rate_limit.comments_limit)
 async def delete_comment(
+    request: Request,
     post_id: int,
     comment_id: int,
     sub: GetSubDep,

@@ -18,6 +18,7 @@ os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__USER", "test@test.local")
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PASSWORD", "test-password-12345")
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL", "noreply@test.local")
 os.environ.setdefault("ENV_TESTING", "true")
+os.environ.setdefault("ENV_RATE_LIMIT__ENABLED", "false")
 
 
 import pytest
