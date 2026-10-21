@@ -140,11 +140,25 @@ async def validation_exception_handler(
     request: Request,
     exc: RequestValidationError,
 ) -> JSONResponse:
+    errors = exc.errors()
+    first_error = errors[0] if errors else {}
+    error_type = first_error.get("type", "")
+    field = first_error.get("loc", ())[-1] if first_error.get("loc") else ""
+
+    if field == "content" and error_type in {"string_too_short", "value_error"}:
+        message = "Пост не может быть пустым"
+    elif field == "content" and error_type == "string_too_long":
+        message = "Текст поста не может превышать 2200 символов"
+    elif field == "content" and error_type == "missing":
+        message = "Поле content обязательно"
+    else:
+        message = "Invalid request data"
+
     return JSONResponse(
         status_code=422,
         content={
             "error": "VALIDATION_ERROR",
-            "message": "Invalid request data",
+            "message": message,
         },
     )
 
