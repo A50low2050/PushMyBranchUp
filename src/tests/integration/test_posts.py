@@ -35,6 +35,7 @@ class TestPosts:
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
         assert response.status_code == 422, response.text
+        assert response.json()["message"] == "Пост не может быть пустым"
 
     async def test_create_post_whitespace_only(self, client, auth_headers):
         """Попытка создать пост из пробелов возвращает 422 (validator)."""
@@ -43,6 +44,7 @@ class TestPosts:
         response = await client.post("/v1/posts", json=payload, headers=auth_headers)
 
         assert response.status_code == 422, response.text
+        assert response.json()["message"] == "Пост не может быть пустым"
 
     async def test_create_post_unauthorized(self, client):
         """Попытка создать пост без токена возвращает 401."""
