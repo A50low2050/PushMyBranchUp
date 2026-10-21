@@ -7,11 +7,11 @@ services:
       dockerfile: Dockerfile
     
     env_file:
-      - .env.docker.example
+      - path: .env.docker.example
 
     ports:
       - "8888:8888"
 
     volumes:
-      - ./db.sqlite3:/app/data/db.sqlite3
+      - ./data:/app/data
       - ./logs:/app/logs

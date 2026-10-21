@@ -11,7 +11,7 @@ os.environ.setdefault("ENV_AUTH__SECRET_KEY", "test-secret-key-for-pytest-only-1
 os.environ.setdefault("ENV_UVICORN__HOST", "127.0.0.1")
 os.environ.setdefault("ENV_UVICORN__PORT", "8000")
 os.environ.setdefault("ENV_UVICORN__RELOAD", "false")
-os.environ.setdefault("ENV_DATABASE__URL", f"sqlite+aiosqlite:///./{TEST_DB_FILE}")
+os.environ.setdefault("ENV_DATABASE__URL", f"sqlite+aiosqlite:///{TEST_DB_FILE}")
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__HOST", "smtp.test.local")
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__PORT", "587")
 os.environ.setdefault("ENV_NOTIFICATIONS__EMAIL__USER", "test@test.local")
@@ -83,6 +83,8 @@ async def _setup_database():
         await conn.run_sync(BaseORM.metadata.create_all)
     yield
     await test_engine.dispose()
+    if os.path.exists(TEST_DB_FILE):
+        os.remove(TEST_DB_FILE)
 
 
 @pytest_asyncio.fixture(autouse=True)
