@@ -105,8 +105,12 @@ class UsersService(BaseService):
             )
             raise UserAlreadyExistsError from exc
 
-        logger.info("Зарегистрирован пользователь #%s (%s)", result.id, result.email)
         user_schema = UserResponseDTO.model_validate(result)
+        logger.info(
+            "Зарегистрирован пользователь #%s (%s)",
+            user_schema.id,
+            user_schema.email,
+        )
         return user_schema
 
     async def get_user(self, user_id: int) -> UserResponseDTO:
