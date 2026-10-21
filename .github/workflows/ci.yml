@@ -60,3 +60,12 @@ jobs:
       - name: Build Docker image
         run: |
           docker compose build
+
+      - name: Run Docker container
+        run:  |
+          timeout 60s docker compose up --abort-on-container-exit || true
+
+      - name: Stop Docker containers
+        if: always()
+        run: |
+          docker compose down

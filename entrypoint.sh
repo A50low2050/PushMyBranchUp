@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
-alembic upgrade head
+mkdir -p /app/data /app/logs
+chown -R appuser:appuser /app/data /app/logs 2>/dev/null || true
+chmod -R 775 /app/data /app/logs 2>/dev/null || true
 
-exec "$@"
+gosu appuser alembic upgrade head
+
+exec gosu appuser "$@"
