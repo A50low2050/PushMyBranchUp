@@ -66,6 +66,12 @@ class FollowsService(BaseService):
             followed = False
 
         await self.db.commit()
+        logger.info(
+            "Пользователь #%s %s на пользователя #%s",
+            follower_id,
+            "подписался" if followed else "отписался",
+            followed_id,
+        )
 
         follow_resp = FollowResponseDTO(
             follower_id=follower_id,

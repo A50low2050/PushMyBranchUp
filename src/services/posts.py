@@ -39,6 +39,7 @@ class PostsService(BaseService):
 
         result = cast(PostDTO, await self.db.posts.add(post))
         await self.db.commit()
+        logger.info("Пользователь #%s создал пост #%s", user_id, result.id)
 
         post_resp = PostResponseDTO(
             post_id=result.id,

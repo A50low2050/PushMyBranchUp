@@ -60,6 +60,7 @@ class UsersService(BaseService):
             )
         tokens = await TokenService(self.db).update_tokens(user=user, cache=cache)
         await self.db.commit()
+        logger.info("Пользователь #%s (%s) вошёл в систему", user.id, data.email)
         return tokens
 
     async def refresh(
@@ -104,6 +105,7 @@ class UsersService(BaseService):
             )
             raise UserAlreadyExistsError from exc
 
+        logger.info("Зарегистрирован пользователь #%s (%s)", result.id, result.email)
         user_schema = UserResponseDTO.model_validate(result)
         return user_schema
 
@@ -140,6 +142,7 @@ class UsersService(BaseService):
             hashed_data=rf_token.hashed_data,
         )
         await self.db.commit()
+        logger.info("Пользователь #%s вышел из системы", user_id)
 
     async def update_user(self, user_id: int, data: UserUpdateDTO) -> UserResponseDTO:
         """Обновление данных о пользователе"""
