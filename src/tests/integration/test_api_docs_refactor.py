@@ -62,9 +62,9 @@ async def test_openapi_keeps_examples(client: AsyncClient) -> None:
     assert resp.status_code == 200, resp.text
     schema: Any = resp.json()
     assert isinstance(schema, dict), f"openapi.json is not object: {type(schema)}"
-    assert _count_openapi_examples(schema) > 0, (
-        "FINDING: OpenAPI has no request/response examples"
-    )
+    assert (
+        _count_openapi_examples(schema) > 0
+    ), "FINDING: OpenAPI has no request/response examples"
 
 
 def test_examples_externalized_as_importable_modules() -> None:
@@ -95,19 +95,19 @@ async def test_styles_externalized_and_delivered_to_docs(client: AsyncClient) ->
     """
     css_path = STYLE_DIR / "swagger.css"
     js_path = STYLE_DIR / "swagger.js"
-    assert css_path.is_file() and css_path.read_text(encoding="utf-8").strip(), (
-        f"swagger.css missing/empty: {css_path}"
-    )
-    assert js_path.is_file() and js_path.read_text(encoding="utf-8").strip(), (
-        f"swagger.js missing/empty: {js_path}"
-    )
+    assert (
+        css_path.is_file() and css_path.read_text(encoding="utf-8").strip()
+    ), f"swagger.css missing/empty: {css_path}"
+    assert (
+        js_path.is_file() and js_path.read_text(encoding="utf-8").strip()
+    ), f"swagger.js missing/empty: {js_path}"
 
     docs: Response = await client.get("/docs")
     assert docs.status_code == 200, docs.text
     html = docs.text
-    assert css_path.read_text(encoding="utf-8").strip() in html, (
-        "swagger.css not delivered to /docs"
-    )
-    assert js_path.read_text(encoding="utf-8").strip() in html, (
-        "swagger.js not delivered to /docs"
-    )
+    assert (
+        css_path.read_text(encoding="utf-8").strip() in html
+    ), "swagger.css not delivered to /docs"
+    assert (
+        js_path.read_text(encoding="utf-8").strip() in html
+    ), "swagger.js not delivered to /docs"
