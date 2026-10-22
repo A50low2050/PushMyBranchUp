@@ -179,3 +179,104 @@ class TestAccess:
         # Базовая проверка структуры ответа
         assert "username" in body["data"]
         assert "email" in body["data"]
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "payload", "expected_message"),
+    [
+        (
+            "/auth/register",
+            {"username": "", "email": "test@example.com", "password": "Password123!"},
+            "Логин не может быть пустым",
+        ),
+        (
+            "/auth/register",
+            {"username": "ab", "email": "test@example.com", "password": "Password123!"},
+            "Логин должен содержать минимум 3 символа",
+        ),
+        (
+            "/auth/register",
+            {
+                "username": "a" * 256,
+                "email": "test@example.com",
+                "password": "Password123!",
+            },
+            "Логин не может превышать 255 символов",
+        ),
+        (
+            "/auth/register",
+            {"username": "validuser", "email": "", "password": "Password123!"},
+            "Электронная почта не может быть пустой",
+        ),
+        (
+            "/auth/register",
+            {
+                "username": "validuser",
+                "email": "invalid-email",
+                "password": "Password123!",
+            },
+            "Некорректный адрес электронной почты",
+        ),
+        (
+            "/auth/login",
+            {"email": "invalid-email", "password": "Password123!"},
+            "Некорректный адрес электронной почты",
+        ),
+    ],
+)
+async def test_username_email_validation_messages(
+    client, endpoint, payload, expected_message
+):
+    response = await client.post(route_path(endpoint), json=payload)
+
+    assert response.status_code == 422, response.text
+    assert response.json() == {
+        "error": "VALIDATION_ERROR",
+        "message": expected_message,
+    }
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "payload", "expected_message"),
+    [
+        (
+            "/auth/register",
+            {"username": "validuser", "email": "test@example.com", "password": ""},
+            "Пароль не может быть пустым",
+        ),
+        (
+            "/auth/register",
+            {"username": "validuser", "email": "test@example.com", "password": "abc"},
+            "Пароль должен содержать минимум 8 символов",
+        ),
+        (
+            "/auth/register",
+            {
+                "username": "validuser",
+                "email": "test@example.com",
+                "password": "a" * 129,
+            },
+            "Пароль не может превышать 128 символов",
+        ),
+        (
+            "/auth/login",
+            {"email": "test@example.com", "password": ""},
+            "Пароль не может быть пустым",
+        ),
+        (
+            "/auth/login",
+            {"email": "test@example.com"},
+            "Пароль обязателен",
+        ),
+    ],
+)
+async def test_password_validation_messages(
+    client, endpoint, payload, expected_message
+):
+    response = await client.post(route_path(endpoint), json=payload)
+
+    assert response.status_code == 422, response.text
+    assert response.json() == {
+        "error": "VALIDATION_ERROR",
+        "message": expected_message,
+    }

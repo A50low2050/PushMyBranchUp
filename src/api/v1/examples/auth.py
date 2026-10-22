@@ -80,9 +80,63 @@ REGISTER_RESPONSES: dict[int | str, dict[str, Any]] = {
         "description": "Ошибка валидации данных регистрации",
         "content": {
             "application/json": {
-                "example": {
-                    "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                "examples": {
+                    "empty_password": {
+                        "summary": "Пустой пароль",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль не может быть пустым",
+                        },
+                    },
+                    "short_password": {
+                        "summary": "Короткий пароль",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль должен содержать минимум 8 символов",
+                        },
+                    },
+                    "long_password": {
+                        "summary": "Длинный пароль",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль не может превышать 128 символов",
+                        },
+                    },
+                    "empty_username": {
+                        "summary": "Пустой логин",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Логин не может быть пустым",
+                        },
+                    },
+                    "short_username": {
+                        "summary": "Короткий логин",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Логин должен содержать минимум 3 символа",
+                        },
+                    },
+                    "long_username": {
+                        "summary": "Длинный логин",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Логин не может превышать 255 символов",
+                        },
+                    },
+                    "empty_email": {
+                        "summary": "Пустая почта",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Электронная почта не может быть пустой",
+                        },
+                    },
+                    "invalid_email": {
+                        "summary": "Неверный формат почты",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Некорректный адрес электронной почты",
+                        },
+                    },
                 }
             }
         },
@@ -132,9 +186,28 @@ LOGIN_RESPONSES: dict[int | str, dict[str, Any]] = {
         "description": "Некорректные данные для входа",
         "content": {
             "application/json": {
-                "example": {
-                    "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                "examples": {
+                    "empty_password": {
+                        "summary": "Пустой пароль",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль не может быть пустым",
+                        },
+                    },
+                    "empty_email": {
+                        "summary": "Пустая почта",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Электронная почта не может быть пустой",
+                        },
+                    },
+                    "invalid_email": {
+                        "summary": "Неверный формат почты",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Некорректный адрес электронной почты",
+                        },
+                    },
                 }
             }
         },
