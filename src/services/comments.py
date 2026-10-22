@@ -150,7 +150,7 @@ class CommentsService(BaseService):
                 comment_id,
                 post_id,
             )
-            raise CommentNotFoundError from exc
+            raise CommentNotFoundError(str(exc)) from exc
         return CommentResponseDTO.model_validate(comment)
 
     async def update_comment(
@@ -170,11 +170,11 @@ class CommentsService(BaseService):
             )
         except ObjectNotFoundError as exc:
             logger.error(
-                "Редактирование комментария: комментарий #%s к посту #%s не найден",
+                "Редактирование комментария: комментарий #%s к посту #%s " "не найден",
                 comment_id,
                 post_id,
             )
-            raise CommentNotFoundError from exc
+            raise CommentNotFoundError(str(exc)) from exc
 
         if comment.user_id != user_id:
             logger.error(

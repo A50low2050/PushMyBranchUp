@@ -53,4 +53,19 @@ async def test_rate_limit_exceeded_blocks_requests() -> None:
         assert r3.status_code == 429
         body = r3.json()
         assert body["error"] == "RATE_LIMIT_EXCEEDED"
-        assert "Превышен лимит запросов" in body["message"]
+        assert body["message"] == "Превышен лимит запросов: 2 в минуту"
+
+
+def test_format_rate_limit_detail() -> None:
+    from src.utils.limiter import format_rate_limit_detail
+
+    assert format_rate_limit_detail("30 per minute") == "Превышен лимит запросов: 30 в минуту"
+    assert format_rate_limit_detail("30 per 1 minute") == "Превышен лимит запросов: 30 в минуту"
+    assert format_rate_limit_detail("2 per 1 minute") == "Превышен лимит запросов: 2 в минуту"
+    assert format_rate_limit_detail("10 per second") == "Превышен лимит запросов: 10 в секунду"
+    assert format_rate_limit_detail("100 per hour") == "Превышен лимит запросов: 100 в час"
+    assert format_rate_limit_detail("1000 per day") == "Превышен лимит запросов: 1000 в день"
+    assert format_rate_limit_detail("5 per 10 seconds") == "Превышен лимит запросов: 5 за 10 секунд"
+    assert format_rate_limit_detail("50 per 2 minutes") == "Превышен лимит запросов: 50 за 2 минуты"
+    assert format_rate_limit_detail(None) == "Превышен лимит запросов. Попробуйте позже."
+    assert format_rate_limit_detail("") == "Превышен лимит запросов. Попробуйте позже."

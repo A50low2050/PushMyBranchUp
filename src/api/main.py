@@ -16,7 +16,7 @@ from src.db.connection import sessionmaker
 from src.db.manager import DBManager
 from src.utils.cacheserv import InMemoryAsyncCacheService
 from src.utils.exceptions import SMTPConnectionError
-from src.utils.limiter import limiter
+from src.utils.limiter import format_rate_limit_detail, limiter
 from src.utils.logserv import LogService
 from src.utils.notiserv import NotificationService, SMTPProvider
 
@@ -98,7 +98,8 @@ async def rate_limit_exceeded_handler(
     request: Request,
     exc: RateLimitExceeded,
 ) -> JSONResponse:
-    error_obj = RateLimitHTTPError(detail=f"Превышен лимит запросов: {exc.detail}")
+    error_detail = format_rate_limit_detail(exc.detail)
+    error_obj = RateLimitHTTPError(detail=error_detail)
     response = JSONResponse(
         status_code=error_obj.status_code,
         content={
@@ -158,18 +159,16 @@ async def validation_exception_handler(
         )
     elif field == "content" and error_type == "missing":
         message = "Поле content обязательно"
-    elif field == "password" and error_type == "missing":
-        message = "Поле password обязательно"
-    elif field == "password" and error_type == "string_too_short":
-        password = first_error.get("input")
-        if password == "":
-            message = "Пароль не может быть пустым"
-        else:
-            message = "Пароль должен содержать минимум 8 символов"
-    elif field == "password" and error_type == "string_too_long":
-        message = "Пароль не может превышать 128 символов"
     else:
-        message = "Invalid request data"
+        err_msg = first_error.get("msg", "")
+        if err_msg.startswith("Value error, "):
+            err_msg = err_msg.removeprefix("Value error, ")
+        if field and err_msg:
+            message = f"Invalid request data: {field} - {err_msg}"
+        elif err_msg:
+            message = f"Invalid request data: {err_msg}"
+        else:
+            message = "Invalid request data"
 
     return JSONResponse(
         status_code=422,
