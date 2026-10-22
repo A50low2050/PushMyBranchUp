@@ -35,7 +35,6 @@ def create_custom_openapi(app: FastAPI) -> Callable[[], dict[str, Any]]:
                 "4. Вставьте токен в поле ниже **без слова Bearer**."
             )
 
-
         add_error_examples(openapi_schema)
 
         app.openapi_schema = openapi_schema
