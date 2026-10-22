@@ -9,38 +9,6 @@ from src.api.docs.swagger_assets import SWAGGER_CSS, SWAGGER_JS
 from src.api.docs.errors import add_error_examples
 
 
-def _patch_openapi_security(schema: dict[str, Any]) -> None:
-    """Синхронизация security-требований схемы с фактической семантикой auth.
-
-    Поведение приложения НЕ меняется — правится только документация:
-    1. Optional-auth роуты (публичное чтение с персонализацией is_liked)
-       получают пустую опцию {} по спеке OpenAPI = "авторизация опциональна".
-    2. Cookie-auth роут /v1/auth/refresh получает декларацию apiKey-схемы,
-       чтобы Swagger показывал замок и требовал cookie при пробе из UI.
-    """
-    components = schema.setdefault("components", {})
-    schemes = components.setdefault("securitySchemes", {})
-    schemes.setdefault(
-        "refreshCookie",
-        {
-            "type": "apiKey",
-            "in": "cookie",
-            "name": "refresh_token",
-            "description": "Refresh-токен в HttpOnly cookie (только /v1/auth/refresh)",
-        },
-    )
-    paths = schema.get("paths", {})
-
-    for path in ("/v1/posts", "/v1/posts/{post_id}"):
-        operation = paths.get(path, {}).get("get")
-        if operation is not None:
-            operation["security"] = [{"HTTPBearer": []}, {}]
-
-    operation = paths.get("/v1/auth/refresh", {}).get("post")
-    if operation is not None:
-        operation["security"] = [{"refreshCookie": []}]
-
-
 def create_custom_openapi(app: FastAPI) -> Callable[[], dict[str, Any]]:
     def custom_openapi() -> dict[str, Any]:
         if app.openapi_schema is not None:
@@ -66,8 +34,6 @@ def create_custom_openapi(app: FastAPI) -> Callable[[], dict[str, Any]]:
                 "3. Скопируйте `access_token` из ответа сервера.\n"
                 "4. Вставьте токен в поле ниже **без слова Bearer**."
             )
-
-        _patch_openapi_security(openapi_schema)
 
         add_error_examples(openapi_schema)
 
