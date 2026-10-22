@@ -12,7 +12,10 @@ limiter = Limiter(
 
 
 def format_rate_limit_detail(detail: str | None) -> str:
-    """Переводит описание лимита из формата slowapi/limits (напр. '30 per minute' или '30 per 1 minute') на русский язык."""
+    """Переводит описание лимита slowapi/limits на русский язык.
+
+    Примеры входных значений: '30 per minute' и '30 per 1 minute'.
+    """
     if not detail:
         return "Превышен лимит запросов. Попробуйте позже."
 
