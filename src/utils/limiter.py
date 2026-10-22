@@ -1,4 +1,5 @@
 import re
+
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -12,7 +13,8 @@ limiter = Limiter(
 
 
 def format_rate_limit_detail(detail: str | None) -> str:
-    """Переводит описание лимита из формата slowapi/limits (напр. '30 per minute' или '30 per 1 minute') на русский язык."""
+    """Переводит описание лимита из формата slowapi/limits
+    (напр. '30 per minute' или '30 per 1 minute') на русский язык."""
     if not detail:
         return "Превышен лимит запросов. Попробуйте позже."
 
