@@ -158,6 +158,36 @@ async def validation_exception_handler(
         )
     elif field == "content" and error_type == "missing":
         message = "Поле content обязательно"
+    elif field == "password" and error_type == "missing":
+        message = "Пароль обязателен"
+    elif field == "password" and error_type == "string_too_short":
+        message = (
+            "Пароль не может быть пустым"
+            if first_error.get("input") == ""
+            else "Пароль должен содержать минимум 8 символов"
+        )
+    elif field == "password" and error_type == "string_too_long":
+        message = "Пароль не может превышать 128 символов"
+    elif field == "username" and error_type == "missing":
+        message = "Логин обязателен"
+    elif field == "username" and error_type == "string_too_short":
+        message = (
+            "Логин не может быть пустым"
+            if first_error.get("input") == ""
+            else "Логин должен содержать минимум 3 символа"
+        )
+    elif field == "username" and error_type == "string_too_long":
+        message = "Логин не может превышать 255 символов"
+    elif field == "email" and error_type == "missing":
+        message = "Электронная почта обязательна"
+    elif field == "email" and error_type == "value_error":
+        message = (
+            "Электронная почта не может быть пустой"
+            if first_error.get("input") == ""
+            else "Некорректный адрес электронной почты"
+        )
+    elif field == "email" and error_type == "string_too_long":
+        message = "Электронная почта не может превышать 255 символов"
     else:
         message = "Invalid request data"
 
