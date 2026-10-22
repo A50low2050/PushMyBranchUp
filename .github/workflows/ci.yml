@@ -5,7 +5,6 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
   
 jobs:
   lint-and-test:
@@ -58,7 +57,7 @@ jobs:
         run: cp .env.docker.example .env.docker
 
       - name: Append SMTP to Docker environment file
-        if: ${{ secrets.SMTP_HOST != '' }}
+        if: ${{ env.SMTP_HOST != '' }}
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
