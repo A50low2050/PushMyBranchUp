@@ -12,7 +12,7 @@ help:
 	@echo   make env         - Create .env and .env.docker from templates
 
 env:
-	@$(PYTHON) -c "import shutil, pathlib; [print(f'[+] Created {dst} from {src}') if not pathlib.Path(dst).exists() and shutil.copyfile(src, dst) else print(f'[i] {dst} already exists') for src, dst in [('.env.example', '.env')]]"
+	@$(PYTHON) -c "import shutil, pathlib; [print(f'[+] Created {dst} from {src}') if not pathlib.Path(dst).exists() and shutil.copyfile(src, dst) else print(f'[i] {dst} already exists') for src, dst in [('.env.example', '.env'), ('.env.docker.example', '.env.docker')]]"
 
 migrate:
 	alembic upgrade head
