@@ -53,7 +53,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare Docker environment file
+      - name: Prepare Base Docker environment file
+        run: cp .env.docker.example .env.docker
+
+      - name: Append SMTP to Docker environment file
+        if: ${{ secrets.SMTP_HOST != '' }}
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -61,14 +65,12 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
         run: |
-          if [ -n "$SMTP_HOST" ]; then
-            echo "ENV_NOTIFICATIONS__ENABLED=True" >> .env.docker
-            echo "ENV_NOTIFICATIONS__EMAIL__HOST=$SMTP_HOST" >> .env.docker
-            echo "ENV_NOTIFICATIONS__EMAIL__PORT=$SMTP_PORT" >> .env.docker
-            echo "ENV_NOTIFICATIONS__EMAIL__USER=$SMTP_USER" >> .env.docker
-            echo "ENV_NOTIFICATIONS__EMAIL__PASSWORD=$SMTP_PASSWORD" >> .env.docker
-            echo "ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL=$SMTP_FROM_EMAIL" >> .env.docker
-          fi
+          echo "ENV_NOTIFICATIONS__ENABLED=True" >> .env.docker
+          echo "ENV_NOTIFICATIONS__EMAIL__HOST=$SMTP_HOST" >> .env.docker
+          echo "ENV_NOTIFICATIONS__EMAIL__PORT=$SMTP_PORT" >> .env.docker
+          echo "ENV_NOTIFICATIONS__EMAIL__USER=$SMTP_USER" >> .env.docker
+          echo "ENV_NOTIFICATIONS__EMAIL__PASSWORD=$SMTP_PASSWORD" >> .env.docker
+          echo "ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL=$SMTP_FROM_EMAIL" >> .env.docker
 
       - name: Build Docker image
         run: |
