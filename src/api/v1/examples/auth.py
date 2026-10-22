@@ -80,9 +80,28 @@ REGISTER_RESPONSES: dict[int | str, dict[str, Any]] = {
         "description": "Ошибка валидации данных регистрации",
         "content": {
             "application/json": {
-                "example": {
-                    "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                "examples": {
+                    "empty_password": {
+                        "summary": "Пустой пароль",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль не может быть пустым",
+                        },
+                    },
+                    "short_password": {
+                        "summary": "Пароль короче 8 символов",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль должен содержать минимум 8 символов",
+                        },
+                    },
+                    "long_password": {
+                        "summary": "Пароль длиннее 128 символов",
+                        "value": {
+                            "error": "VALIDATION_ERROR",
+                            "message": "Пароль не может превышать 128 символов",
+                        },
+                    },
                 }
             }
         },
@@ -134,7 +153,7 @@ LOGIN_RESPONSES: dict[int | str, dict[str, Any]] = {
             "application/json": {
                 "example": {
                     "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                    "message": "Пароль не может быть пустым",
                 }
             }
         },

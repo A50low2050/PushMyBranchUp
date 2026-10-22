@@ -158,6 +158,16 @@ async def validation_exception_handler(
         )
     elif field == "content" and error_type == "missing":
         message = "Поле content обязательно"
+    elif field == "password" and error_type == "missing":
+        message = "Поле password обязательно"
+    elif field == "password" and error_type == "string_too_short":
+        password = first_error.get("input")
+        if password == "":
+            message = "Пароль не может быть пустым"
+        else:
+            message = "Пароль должен содержать минимум 8 символов"
+    elif field == "password" and error_type == "string_too_long":
+        message = "Пароль не может превышать 128 символов"
     else:
         message = "Invalid request data"
 
