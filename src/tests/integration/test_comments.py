@@ -27,6 +27,30 @@ class TestComments:
         assert data["post_id"] == post_id
         assert "id" in data
 
+    async def test_create_comment_invalid_content(
+        self,
+        client: AsyncClient,
+        auth_headers: dict[str, str],
+        created_post: dict[str, int],
+    ) -> None:
+        """Некорректный текст комментария возвращает понятную ошибку."""
+        post_id = created_post["id"]
+        cases = [
+            ("", "Комментарий не может быть пустым"),
+            ("   ", "Комментарий не может быть пустым"),
+            ("а" * 2201, "Текст комментария не может превышать 2200 символов"),
+        ]
+
+        for content, expected_message in cases:
+            response = await client.post(
+                route_path(f"/posts/{post_id}/comments"),
+                headers=auth_headers,
+                json={"content": content},
+            )
+            assert response.status_code == 422, response.text
+            assert response.json()["error"] == "VALIDATION_ERROR"
+            assert response.json()["message"] == expected_message
+
     async def test_create_comment_missing_post(
         self, client: AsyncClient, auth_headers: dict[str, str]
     ) -> None:
@@ -135,6 +159,38 @@ class TestComments:
         )
         assert patch_resp.status_code == 200, patch_resp.text
         assert patch_resp.json()["content"] == "Отредактированный комментарий (PATCH)"
+
+    async def test_edit_comment_invalid_content(
+        self,
+        client: AsyncClient,
+        auth_headers: dict[str, str],
+        created_post: dict[str, int],
+    ) -> None:
+        """Некорректное содержимое комментария при редактировании."""
+        post_id = created_post["id"]
+        create_resp = await client.post(
+            route_path(f"/posts/{post_id}/comments"),
+            headers=auth_headers,
+            json={"content": "Исходный комментарий"},
+        )
+        assert create_resp.status_code == 201, create_resp.text
+        comment_id = create_resp.json()["id"]
+
+        cases = [
+            ("", "Комментарий не может быть пустым"),
+            ("   ", "Комментарий не может быть пустым"),
+            ("а" * 2201, "Текст комментария не может превышать 2200 символов"),
+        ]
+
+        for content, expected_message in cases:
+            response = await client.patch(
+                route_path(f"/posts/{post_id}/comments/{comment_id}"),
+                headers=auth_headers,
+                json={"content": content},
+            )
+            assert response.status_code == 422, response.text
+            assert response.json()["error"] == "VALIDATION_ERROR"
+            assert response.json()["message"] == expected_message
 
     async def test_edit_comment_missing_post_returns_comment_not_found(
         self,

@@ -53,7 +53,7 @@ CREATE_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
             "application/json": {
                 "example": {
                     "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                    "message": "Комментарий не может быть пустым",
                 }
             }
         },
@@ -249,7 +249,7 @@ UPDATE_COMMENT_RESPONSES: dict[int | str, dict[str, Any]] = {
             "application/json": {
                 "example": {
                     "error": "VALIDATION_ERROR",
-                    "message": "Invalid request data",
+                    "message": "Комментарий не может быть пустым",
                 }
             }
         },

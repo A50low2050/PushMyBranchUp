@@ -145,10 +145,17 @@ async def validation_exception_handler(
     error_type = first_error.get("type", "")
     field = first_error.get("loc", ())[-1] if first_error.get("loc") else ""
 
+    is_comment = "comments" in request.url.path.split("/")
+    entity = "Комментарий" if is_comment else "Пост"
+
     if field == "content" and error_type in {"string_too_short", "value_error"}:
-        message = "Пост не может быть пустым"
+        message = f"{entity} не может быть пустым"
     elif field == "content" and error_type == "string_too_long":
-        message = "Текст поста не может превышать 2200 символов"
+        message = (
+            "Текст комментария не может превышать 2200 символов"
+            if is_comment
+            else "Текст поста не может превышать 2200 символов"
+        )
     elif field == "content" and error_type == "missing":
         message = "Поле content обязательно"
     else:
