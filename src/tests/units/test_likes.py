@@ -1,9 +1,11 @@
-import asyncio
 from unittest.mock import MagicMock
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
+from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
 from src.models.base import BaseORM
 from src.models.posts import PostORM
@@ -16,139 +18,128 @@ from src.utils.notiserv import NotificationService
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 
-async def _prepare_db() -> DBManager:
+@pytest.fixture
+async def db_manager():
     """Создаёт таблицы в памяти и возвращает DBManager с тестовыми данными."""
-    engine = create_async_engine(TEST_DB_URL)
+    engine = create_async_engine(
+        TEST_DB_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    event.listen(engine.sync_engine, "connect", enable_sqlite_foreign_keys)
     async with engine.begin() as conn:
         await conn.run_sync(BaseORM.metadata.create_all)
 
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
-    db = await DBManager(session_factory).__aenter__()  # type: ignore[no-untyped-call]
-
-    # тестовый пользователь и пост (через ORM, даты заполнит БД)
-    db.session.add(
-        UserORM(
-            id=1, username="tester", email="tester@example.com", hashed_password="x"
+    async with DBManager(session_factory) as db:
+        # тестовый пользователь и пост (через ORM, даты заполнит БД)
+        db.session.add(
+            UserORM(
+                id=1, username="tester", email="tester@example.com", hashed_password="x"
+            )
         )
-    )
-    db.session.add(PostORM(id=1, user_id=1, content="привет, мир!"))
-    await db.session.flush()
-    return db
+        db.session.add(PostORM(id=1, user_id=1, content="привет, мир!"))
+        await db.session.flush()
+        yield db
+
+    await engine.dispose()
 
 
-def test_toggle_like_sets_and_removes_like(
+async def test_toggle_like_sets_and_removes_like(
+    db_manager: DBManager,
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
     fake_payload: MagicMock,
 ) -> None:
     """Первый вызов ставит лайк, второй — убирает (toggle)."""
+    service = LikesService(db_manager)
 
-    async def run() -> None:
-        db = await _prepare_db()
-        service = LikesService(db)
+    # лайка нет -> ставим
+    result = await service.toggle_like(
+        post_id=1,
+        user_id=1,
+        notifications=fake_notifications,
+        background_tasks=fake_background_tasks,
+        payload=fake_payload,
+    )
+    assert result.is_liked is True
+    assert result.post_id == 1
+    assert result.user_id == 1
 
-        # лайка нет -> ставим
-        result = await service.toggle_like(
-            post_id=1,
-            user_id=1,
-            notifications=fake_notifications,
-            background_tasks=fake_background_tasks,
-            payload=fake_payload,
-        )
-        assert result.is_liked is True
-        assert result.post_id == 1
-        assert result.user_id == 1
+    like = await db_manager.likes.get_one_or_none(user_id=1, post_id=1)
+    assert like is not None
 
-        like = await db.likes.get_one_or_none(user_id=1, post_id=1)
-        assert like is not None
+    # лайк есть -> убираем
+    result = await service.toggle_like(
+        post_id=1,
+        user_id=1,
+        notifications=fake_notifications,
+        background_tasks=fake_background_tasks,
+        payload=fake_payload,
+    )
+    assert result.is_liked is False
 
-        # лайк есть -> убираем
-        result = await service.toggle_like(
-            post_id=1,
-            user_id=1,
-            notifications=fake_notifications,
-            background_tasks=fake_background_tasks,
-            payload=fake_payload,
-        )
-        assert result.is_liked is False
-
-        like = await db.likes.get_one_or_none(user_id=1, post_id=1)
-        assert like is None
-
-        await db.__aexit__(None, None, None)
-
-    asyncio.run(run())
+    like = await db_manager.likes.get_one_or_none(user_id=1, post_id=1)
+    assert like is None
 
 
-def test_toggle_like_raises_for_missing_post(
+async def test_toggle_like_raises_for_missing_post(
+    db_manager: DBManager,
     fake_notifications: NotificationService,
     fake_background_tasks: MagicMock,
     fake_payload: MagicMock,
 ) -> None:
     """Лайк несуществующего поста -> PostNotFoundError."""
+    service = LikesService(db_manager)
 
-    async def run() -> None:
-        db = await _prepare_db()
-        service = LikesService(db)
-
-        with pytest.raises(PostNotFoundError):
-            await service.toggle_like(
-                post_id=999,
-                user_id=1,
-                notifications=fake_notifications,
-                background_tasks=fake_background_tasks,
-                payload=fake_payload,
-            )
-
-        await db.__aexit__(None, None, None)
-
-    asyncio.run(run())
-
-
-def test_toggle_like_isolated_between_users(
-    fake_notifications: NotificationService,
-    fake_background_tasks: MagicMock,
-    fake_payload: MagicMock,
-) -> None:
-    """Лайк одного пользователя не мешает лайку другого."""
-
-    async def run() -> None:
-        db = await _prepare_db()
-        db.session.add(
-            UserORM(
-                id=2, username="second", email="second@example.com", hashed_password="x"
-            )
-        )
-        await db.session.flush()
-        service = LikesService(db)
-
-        payload_user2 = MagicMock()
-        payload_user2.sub = "2"
-        payload_user2.username = "second"
-        payload_user2.email = "second@example.com"
-
-        r1 = await service.toggle_like(
-            post_id=1,
+    with pytest.raises(PostNotFoundError):
+        await service.toggle_like(
+            post_id=999,
             user_id=1,
             notifications=fake_notifications,
             background_tasks=fake_background_tasks,
             payload=fake_payload,
         )
-        r2 = await service.toggle_like(
-            post_id=1,
-            user_id=2,
-            notifications=fake_notifications,
-            background_tasks=fake_background_tasks,
-            payload=payload_user2,
+
+
+async def test_toggle_like_isolated_between_users(
+    db_manager: DBManager,
+    fake_notifications: NotificationService,
+    fake_background_tasks: MagicMock,
+    fake_payload: MagicMock,
+) -> None:
+    """Лайк одного пользователя не мешает лайку другого."""
+    db_manager.session.add(
+        UserORM(
+            id=2, username="second", email="second@example.com", hashed_password="x"
         )
+    )
+    await db_manager.session.flush()
+    service = LikesService(db_manager)
 
-        assert r1.is_liked is True
-        assert r2.is_liked is True
+    payload_user2 = MagicMock()
+    payload_user2.sub = "2"
+    payload_user2.username = "second"
+    payload_user2.email = "second@example.com"
 
-        # у поста теперь два лайка
-        likes = await db.likes.get_all()
-        assert len(likes) == 2
+    r1 = await service.toggle_like(
+        post_id=1,
+        user_id=1,
+        notifications=fake_notifications,
+        background_tasks=fake_background_tasks,
+        payload=fake_payload,
+    )
+    r2 = await service.toggle_like(
+        post_id=1,
+        user_id=2,
+        notifications=fake_notifications,
+        background_tasks=fake_background_tasks,
+        payload=payload_user2,
+    )
 
-        await db.__aexit__(None, None, None)
+    assert r1.is_liked is True
+    assert r2.is_liked is True
 
-    asyncio.run(run())
+    # у поста теперь два лайка
+    likes = await db_manager.likes.get_all()
+    assert len(likes) == 2
