@@ -40,9 +40,7 @@ async def db_manager():
             )
         )
         db.session.add(
-            UserORM(
-                id=2, username="other", email="other@example.com", hashed_password="y"
-            )
+            UserORM(id=2, username="other", email="other@example.com", hashed_password="y")
         )
         post = PostORM(id=1, user_id=1, content="Пост автора")
         db.session.add(post)

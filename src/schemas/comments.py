@@ -83,7 +83,6 @@ class CommentEditDTO(BaseDTO):
 
 class CommentDeleteDataDTO(BaseDTO):
     deleted_count: int = Field(description="Количество удалённых комментариев")
-    deleted: bool = Field(default=True, description="Флаг успешного удаления")
 
 
 class CommentDeleteResponseDTO(BaseDTO):
