@@ -62,12 +62,12 @@ jobs:
           SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
         run: |
           if [ -n "$SMTP_HOST" ]; then
-            echo "ENV_NOTIFICATIONS__ENABLED=True" >> .env.docker.example
-            echo "ENV_NOTIFICATIONS__EMAIL__HOST=$SMTP_HOST" >> .env.docker.example
-            echo "ENV_NOTIFICATIONS__EMAIL__PORT=$SMTP_PORT" >> .env.docker.example
-            echo "ENV_NOTIFICATIONS__EMAIL__USER=$SMTP_USER" >> .env.docker.example
-            echo "ENV_NOTIFICATIONS__EMAIL__PASSWORD=$SMTP_PASSWORD" >> .env.docker.example
-            echo "ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL=$SMTP_FROM_EMAIL" >> .env.docker.example
+            echo "ENV_NOTIFICATIONS__ENABLED=True" >> .env.docker
+            echo "ENV_NOTIFICATIONS__EMAIL__HOST=$SMTP_HOST" >> .env.docker
+            echo "ENV_NOTIFICATIONS__EMAIL__PORT=$SMTP_PORT" >> .env.docker
+            echo "ENV_NOTIFICATIONS__EMAIL__USER=$SMTP_USER" >> .env.docker
+            echo "ENV_NOTIFICATIONS__EMAIL__PASSWORD=$SMTP_PASSWORD" >> .env.docker
+            echo "ENV_NOTIFICATIONS__EMAIL__FROM_EMAIL=$SMTP_FROM_EMAIL" >> .env.docker
           fi
 
       - name: Build Docker image
