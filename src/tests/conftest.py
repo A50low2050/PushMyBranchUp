@@ -39,7 +39,7 @@ from src.db.connection import enable_sqlite_foreign_keys
 from src.db.manager import DBManager
 from unittest.mock import MagicMock
 
-from src.models import (  
+from src.models import (
     comments,
     likes,
     posts,
