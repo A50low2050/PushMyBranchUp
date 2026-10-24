@@ -1,13 +1,4 @@
-"""Тест счетчик лайков в комментариях.
-
-Тесты динамически читают /openapi.json и проверяют:
-1. Наличие securitySchemes (кнопка Authorize в Swagger работает).
-2. Задокументированные как защищённые (имеют ключ 'security' в OpenAPI) —
-   обязаны отдавать 401 или 403 без токена.
-3. Задокументированные как публичные (нет ключа 'security') — не должны
-   отдавать 401/403.
-4. Критические приватные роуты защищены И задокументированы с 'security'.
-"""
+"""Тест счетчик лайков в комментариях."""
 
 from __future__ import annotations
 
@@ -57,7 +48,7 @@ async def _add_comment(
 async def _make_two_posts_with_comments(
     client: AsyncClient, headers: dict[str, str]
 ) -> tuple[int, int]:
-    """Пост A с 3 комментариями и пост B с 2 (сценарий из ТЗ)."""
+    """Пост A с 3 комментариями и пост B с 2 ."""
     post_a = await _create_post(client, headers, "Post A for comment counter audit")
     post_b = await _create_post(client, headers, "Post B for comment counter audit")
     for i in range(3):
