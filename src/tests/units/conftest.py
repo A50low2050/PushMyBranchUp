@@ -1,9 +1,4 @@
-"""Фикстуры для юнит-тестов сервисов.
-
-fake_notifications и fake_background_tasks — лёгкие заглушки,
-которые полностью заменяют реальный NotificationService и BackgroundTasks
-в тестах, не делая ни одного сетевого вызова.
-"""
+"""Фикстуры для юнит-тестов сервисов."""
 
 from unittest.mock import AsyncMock, MagicMock
 
